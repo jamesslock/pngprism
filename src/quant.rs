@@ -13,7 +13,7 @@
 //! This is a seam-by-seam translation of in-repo original work (T-0067
 //! skeleton, T-0068 real core, T-0094/T-0095 phase 2, review-passed); the
 //! Python reference is the behavioral ORACLE. Every function names its
-//! mirrored oracle function; `PORT-PLAN.md` §P2.3 is the module map and
+//! mirrored oracle function (vendored at `tests/oracle/`), and
 //! §6/§P2.5 the determinism rules (integer widths, half-up rounding,
 //! explicit ordering, tie semantics). Method provenance: inherited from
 //! the oracle's ledger rows (`lab/reference/REFERENCES.md`); no new
@@ -1943,7 +1943,7 @@ pub fn quantize_image_with_color_space(
 // ch17 §31/lint posture: deliberate — `quantize_png` mirrors the oracle's
 // `quantize_png(in_path, out_path, colors, hidden_rgb_policy, dither,
 // dither_strength, dither_policy, pack_mode, pack_search)` positional
-// signature one-for-one (PORT-PLAN §P2.3); grouping these into an options
+// signature one-for-one; grouping these into an options
 // struct is tracked as follow-up work (tri-review action 7 — an options
 // surface is a prerequisite for the §32 candidate-set API), not a docs/
 // lint/ops-hygiene change. `#[expect]` (not `#[allow]`) so this site stops

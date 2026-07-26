@@ -10,7 +10,7 @@
 //! method=Z_DEFLATED, windowBits=15, memLevel=8, strategy=Z_DEFAULT_STRATEGY)`.
 //!
 //! STOP-spike-verified byte-identical to Python over a 66-row battery (probe
-//! lengths AND filter choices; `PORT-PLAN.md` §P2.4). The property is also
+//! lengths AND filter choices). The property is also
 //! pinned as an in-crate test.
 //!
 //! Safety: the `z_stream` is held as `MaybeUninit` and only ever touched

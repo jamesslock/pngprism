@@ -9,8 +9,8 @@
 //! claim; it does not mean the Rust port is still awaiting its historical
 //! T-0193 parity work. This crate was developed as a seam-by-seam translation
 //! of in-repo original work (T-0082/T-0095) and is gated against the Python
-//! oracle (see `PORT-PLAN.md`; the parity harnesses themselves live lab-side,
-//! in the `pngprism-lab` repository). There is no API-stability
+//! oracle (vendored at `tests/oracle/`, digest-pinned, and run by the
+//! differential suite). There is no API-stability
 //! or public-release claim.
 //! Method provenance is inherited from the oracle's ledger
 //! (`lab/reference/REFERENCES.md`); the clean-room quarantine binds (no

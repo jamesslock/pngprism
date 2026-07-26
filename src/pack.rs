@@ -8,7 +8,7 @@
 //! up to three pinned-`zopflipng` finalists in maximum mode).
 //!
 //! Seam-by-seam translation of in-repo original work; the Python reference is
-//! the behavioral ORACLE (`PORT-PLAN.md` §P2.3 module map, §P2.5 determinism).
+//! the behavioral ORACLE (vendored at `tests/oracle/`, digest-pinned).
 //! `zopflipng` is invoked as a subprocess and is a black-box tool, not a linked
 //! dependency — it does PNG-level work (row-filter search, color-type
 //! reduction), so a deflate-only library is not a substitute for it. It is an
@@ -488,7 +488,7 @@ fn serialize_row_filter_choices(
 /// (`prism_pack._trial_compression_row_filters`). The copied compressor is
 /// flushed only for scoring; the retained state sees the chosen row without an
 /// inserted flush boundary. STOP-spike-verified byte-identical to Python's
-/// `zlib.compressobj(9)` (`PORT-PLAN.md` §P2.4).
+/// `zlib.compressobj(9)`.
 fn trial_compression_row_filters(rows: &[Vec<u8>]) -> Result<(Vec<u8>, Vec<usize>), Error> {
     let mut compressor = zprobe::Deflater::new()
         .map_err(|e| Error::data(format!("trial-zlib deflate init failed: {e}")))?;
@@ -1983,7 +1983,7 @@ mod tests {
 
     #[test]
     fn trial_zlib_matches_frozen_python_oracle() {
-        // STOP-spike property pinned in-crate (PORT-PLAN §P2.4): the trial-zlib
+        // STOP-spike property pinned in-crate: the trial-zlib
         // filter choices reproduce Python zlib.compressobj(9) exactly. Frozen
         // vector generated from prism_pack._trial_compression_row_filters.
         let rows: Vec<Vec<u8>> = vec![

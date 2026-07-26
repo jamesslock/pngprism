@@ -68,13 +68,13 @@ unused-allowed-license = "allow"
 # Do NOT ignore unpublished crates. This was `true` while pngprism carried no
 # `license` field — the suppression was the only thing keeping an unlicensed
 # crate from failing its own audit. pngprism now declares
-# `MIT OR Apache-2.0` (ADR-0033), which is in the allow-list above, so it
+# `MIT OR Apache-2.0`, which is in the allow-list above, so it
 # passes on its own merits; verified by running this check with the suppression
 # removed before deleting it.
 #
 # Keeping it `false` is the point: with `ignore = true`, deleting the `license`
 # field would silently pass. Now the audit FAILS if the crate ever stops
-# declaring its license — the claim is wired to its check (ADR-0025), rather
+# declaring its license — the claim is wired to its check, rather
 # than resting on a flag that keys on `publish = false`.
 ignore = false
 

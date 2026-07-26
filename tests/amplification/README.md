@@ -17,8 +17,7 @@ resource-amplification property T-0212 bounds.
 
 ## Before (pre-T-0212 fix, at the freeze commit)
 
-<!-- The freeze commit is in the `pngprism-lab` history, not this repository's:
-     see PROVENANCE.md §6. -->
+<!-- The freeze commit predates this repository's history; see PROVENANCE.md. -->
 
 ```
 $ /usr/bin/time -l ./target/release/pngprism \

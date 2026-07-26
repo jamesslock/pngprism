@@ -6,7 +6,7 @@ surface, the never-worse output guarantee, and the `--report json` schema, and
 it states the semver policy that governs how each may change.
 
 Two implementations honor this contract byte-for-byte where the parity rule
-requires it (ADR-0025 amendment: never fork a brain):
+requires it (one behavior, two implementations — never two behaviors):
 
 - **Rust** — this crate (`pngprism` package, `pngprism` binary,
   `src/main.rs`; the library target keeps the import name `prism_quant`).

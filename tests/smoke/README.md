@@ -2,7 +2,7 @@
 
 The 24 images from the 47-image M1 smoke set (`tests/smoke_manifest.tsv`) whose
 licenses permit redistribution, copied here so the CLI, quantizer-binding and
-corpus suites run outside the Prism research tree (ADR-0033 §2, escape 7).
+corpus suites run outside the original research tree.
 
 Each file is named `<manifest id>.png` and is a **byte-identical** copy of its
 in-tree original — `MANIFEST.sha256` carries the digests, and they are the same
@@ -13,7 +13,7 @@ digests already pinned in the `sha256` column of `tests/smoke_manifest.tsv`.
 
 | Source | Files | Rights | Here |
 | --- | --- | --- | --- |
-| `benchmarks/synthetic-corpus/` | 12 | **CC0-1.0** — Prism's own generated corpus (ADR-0033 §6) | **Yes** |
+| synthetic corpus | 12 | **CC0-1.0** — the project's own generated corpus | **Yes** |
 | `datasets/collections/kenney-packs/` | 12 | **CC0 1.0** — per-pack `License.txt`, identical grant in all five packs | **Yes** |
 | `datasets/collections/libpng-org-legacy-test-images/` | 9 | No license located; bare copyright notices only (tier U-internal) | No |
 | `datasets/pilot-v0/packages/` | 5 | Per-item admission records, not a blanket redistribution grant | No |
@@ -38,7 +38,7 @@ could locate.
   stderr on a passing run, so the note vanished exactly when someone was trusting
   the green tick. The suites still print their coverage for anyone running with
   `--nocapture`. A suite that quietly tested half of what its name implies is the
-  claims defect this program exists to avoid (ADR-0025).
+  claims defect this project exists to avoid.
 
 ## Integrity
 

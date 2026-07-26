@@ -7,9 +7,9 @@ Rust port agrees with it.
 ## Why these files are here
 
 `pngprism` is a Rust port whose **behavioral oracle is Python**. Under the
-parity rule (ADR-0025 amendment) a copied brain without its differential test is
-review-blocking — so when the crate is extracted to its own repository
-(ADR-0033), the oracle has to travel with it. Otherwise `tests/caps.rs` dies at
+project's parity rule, a copied implementation without its differential test is
+not acceptable — so when the crate is extracted to its own repository
+the oracle has to travel with it. Otherwise `tests/caps.rs` dies at
 the repository boundary and we have forked a brain across a repo split, which is
 the exact failure the rule exists to prevent.
 

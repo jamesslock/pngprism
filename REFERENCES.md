@@ -1,32 +1,26 @@
-# pngprism (Rust crate) — derivation and dependency ledger
+# pngprism — derivation and dependency ledger
 
-**Evidence label: derivation ledger, not a quality or novelty claim.**
-This crate (`lib/prism-quant/` in the lab monorepo; the repository root when
-published standalone) is a Rust port of the reviewed Python
-oracles and inherits their method provenance; this file records (1)
-the oracle source rows the port derives from and (2) the crate's external
-dependencies with licenses and exact pins, per the T-0082 task card.
+What the implementation derives from, and what it depends on. This is a
+provenance record, not a quality or novelty claim.
 
-## 1. Oracle source (in-repo original work — no clean-room issue)
+## 1. Where the algorithms come from
 
-The port is a seam-by-seam translation of OUR OWN reviewed code. The
-method-level derivation ledger for the algorithm itself lives with the
-oracle and is NOT duplicated here:
+pngprism is a seam-by-seam port of a Python reference implementation, vendored
+at [`tests/oracle/`](tests/oracle/) and run against this crate by the
+differential test suite. Both were written from published methods; no
+third-party quantizer source was consulted, and in particular no pngquant or
+libimagequant code was read or translated (see [`PROVENANCE.md`](PROVENANCE.md)).
 
-| Ported component | Oracle file | Oracle provenance ledger |
+| Component | Published method it follows | What is original here |
 | --- | --- | --- |
-| Whole crate (six-seam pipeline, core algorithm, hidden-RGB policies, PLTE/tRNS emission) | `lab/reference/prism_quant.py` (pngprism-lab: `lab/reference/prism_quant.py`) v0.1.1-alpha (T-0067/T-0068, review-passed) | `lab/reference/REFERENCES.md` (pngprism-lab: `lab/reference/REFERENCES.md`) rows: six-stage frame; premultiplied distance; alpha ladder; farthest-point seeding; sparse pair instantiation; zoned joint Lloyd; hidden-RGB policies (Lloyd 1982 and Gonzalez 1985 public-paper lineages recorded there) |
-| `src/png.rs` (decode + indexed writer) | `lab/reference/m1_png.py` (pngprism-lab: `lab/reference/m1_png.py`) | ledger rows: PNG decode to canonical RGBA8; deterministic indexed-PNG emission ([W3C PNG Specification, Third Edition](https://www.w3.org/TR/png-3/); independently authored standard-library implementation) |
-| Oklab opt-in (`src/quant.rs`, `--color-space oklab`) | `lab/reference/prism_quant.py` (pngprism-lab: `lab/reference/prism_quant.py`) at accepted commit `1bc2c339` (T-0131); independently derived in E-0016 | Björn Ottosson, “A perceptual color space for image processing,” published 2020-12-23, matrices updated 2021-01-25, [primary post](https://bottosson.github.io/posts/oklab/) (accessed 2026-07-19). Used the published linear-sRGB/LMS/Oklab forward and inverse matrices and D65 transform. The displayed implementation is public domain or, alternatively, MIT licensed. The premultiplied-alpha extension is the in-repo E-0016 construction, not an Ottosson claim. |
-| Luma-weighted blue-noise opt-in (`src/dither.rs`, `--dither-policy luma-bluenoise`) | `lab/reference/prism_dither.py` (pngprism-lab: `lab/reference/prism_dither.py`) at accepted commit `768ca92a` (T-0139); E-0017 committed masks | Robert Ulichney, “The Void-and-Cluster Method for Dither Array Generation,” *Human Vision, Visual Processing, and Digital Display IV*, Proc. SPIE 1913, 1993. Paper-level method source for the independently authored E-0017 mask generator; no third-party dither code was consulted. The luma-weighted chroma attenuation and premultiplied-alpha application are in-repo E-0017 constructions. |
-| Mask byte verification (`src/sha256.rs`) | Python oracle's `hashlib.sha256` checks in `prism_dither.py` at `768ca92a` | NIST FIPS PUB 180-4, Secure Hash Standard (SHS), SHA-256. Independently implemented one-shot verifier; no new crate dependency. Pinned by standard vectors and the three committed E-0017 mask digests. |
+| Core quantizer (`src/quant.rs`) | Lloyd's algorithm (S. P. Lloyd, "Least squares quantization in PCM", *IEEE Trans. Inf. Theory*, 1982) with farthest-point seeding after Gonzalez ("Clustering to minimize the maximum intercluster distance", *Theoretical Computer Science*, 1985) | The premultiplied-alpha distance metric, the alpha ladder, sparse pair instantiation, zoned joint refinement, and the hidden-RGB policies |
+| PNG decode + indexed writer (`src/png.rs`) | [W3C PNG Specification, Third Edition](https://www.w3.org/TR/png-3/) | Independently written from the specification, standard-library only; deterministic emission ordering |
+| Oklab color space (`--color-space oklab`) | Björn Ottosson, "A perceptual color space for image processing" (2020-12-23, matrices updated 2021-01-25) — [primary post](https://bottosson.github.io/posts/oklab/). Published linear-sRGB/LMS/Oklab forward and inverse matrices and D65 transform; the reference implementation is public domain or MIT | The premultiplied-alpha extension is not an Ottosson claim |
+| Blue-noise dither masks (`--dither-policy luma-bluenoise`) | Robert Ulichney, "The Void-and-Cluster Method for Dither Array Generation", *Human Vision, Visual Processing, and Digital Display IV*, Proc. SPIE 1913, 1993 — used as a paper-level method source; no third-party dither code was consulted | The mask generator, the luma-weighted chroma attenuation, and the premultiplied-alpha application |
+| SHA-256 (`src/sha256.rs`) | NIST FIPS PUB 180-4 | Independently implemented one-shot verifier, so mask integrity checking adds no dependency. Pinned by the standard test vectors |
 
-Clean-room quarantine binds the port exactly as it bound the oracles: no
-libimagequant source, no `book/12-*`. The port adds no methods beyond the
-accepted in-repo oracle paths and no external algorithm sources beyond this
-table and §2.
-
-The committed E-0017 mask byte pins consumed at runtime are:
+The blue-noise masks are embedded in the binary and verified against these
+digests before first use:
 
 - R, seed 20260719: `8ee801878fd37cc52fbb2993fa4d7c5b4ace02f2fccc04a0c28dabf13111b0d8`
 - G, seed 20260720: `80aba5e8dc5cbef7b1c04acfc3e3b0d6193375a74ef007cf8a26d604ae2522cc`

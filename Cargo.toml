@@ -6,8 +6,7 @@ edition = "2024"
 # `incompatible_msrv` caught `u32::is_multiple_of` / `usize::is_multiple_of`
 # use, stable since 1.87 — verified via the `-D warnings` gate, T-0135).
 rust-version = "1.87"
-# Dual permissive, the Rust-ecosystem standard (ADR-0033; the rationale record
-# `LICENSE-RECOMMENDATION.md` stays lab-side, in `pngprism-lab`). Downstream-clean:
+# Dual permissive, the Rust-ecosystem standard. Downstream-clean:
 # the T-0208 audit found every dependency MIT OR Apache-2.0 (dev-only Unicode-3.0,
 # which is dev-only and therefore not distributed),
 # the static-vendored zlib 1.3.1 is Zlib-licensed, zopflipng is Apache-2.0 AND
@@ -17,7 +16,7 @@ rust-version = "1.87"
 # third-party texts and must ship with any binary distribution.
 license = "MIT OR Apache-2.0"
 # Kept false: crates.io registration is a separate decision from the license
-# (ADR-0033 — the license field is valid and useful regardless).
+# (the license field is valid and useful regardless).
 publish = false
 description = "pngprism 0.5.0: Rust port of a reviewed Python reference (vendored at tests/oracle/prism_quant.py and pinned by digest). Metric-validated PNG quantizer; dual-implementation parity-pinned. No human-acceptability claim."
 
@@ -72,8 +71,7 @@ criterion = "=0.8.2"
 # identity, the Rust analogue of the Python module filename `prism_quant.py`,
 # which the pngprism rename (T-0213) keeps as "the lab's name". Pinning it here
 # keeps every in-crate import stable while the PRODUCT identity (package,
-# binary, CLI strings) is `pngprism`. Decision D1 in the lab's
-# benchmarks/release-eng-v05/RENAME-ENUMERATION.md (pngprism-lab).
+# binary, CLI strings) is `pngprism`.
 [lib]
 name = "prism_quant"
 path = "src/lib.rs"

@@ -12,7 +12,7 @@ python3 benchmarks/supply-chain-v05/notices_tool.py generate
 python3 benchmarks/supply-chain-v05/notices_tool.py verify
 ```
 
-pngprism itself is licensed **`MIT OR Apache-2.0`** (ADR-0033 §5; see
+pngprism itself is licensed **`MIT OR Apache-2.0`** (see
 `LICENSE-MIT` and `LICENSE-APACHE`). This file does not restate that grant:
 it enumerates the THIRD-PARTY obligations that travel with any binary
 distribution. It records no legal approval.

@@ -96,5 +96,5 @@ jobs:
       - uses: actions/checkout@v4
       # deny.toml's [licenses.private] ignore is deliberately `false`: if the
       # crate ever stops declaring its own license, this job FAILS rather than
-      # passing quietly (ADR-0033 §5).
+      # passing quietly.
       - uses: EmbarkStudios/cargo-deny-action@v2

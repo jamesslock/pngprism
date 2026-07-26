@@ -9,7 +9,7 @@
 //! This is a seam-by-seam translation of in-repo original work (the classical
 //! Floyd–Steinberg 1976 kernel; the alpha/region rules are original Project
 //! Prism work per the oracle header). The Python reference is the behavioral
-//! ORACLE; `PORT-PLAN.md` §P2.3 is the module map and §P2.5 the determinism
+//! ORACLE (vendored at `tests/oracle/`); the port's determinism
 //! rules. Method provenance is inherited from the oracle ledger.
 //!
 //! The integrated `prism_quant` CLI consumes only the produced INDEX map
