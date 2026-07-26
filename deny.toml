@@ -1,0 +1,124 @@
+# cargo-deny configuration for pngprism (crate renamed from prism-quant,
+# T-0213; Project Prism v0.5, Theme E-17
+# production supply-chain audit, T-0208).
+#
+# Purpose: pin the crate's dependency surface against advisories, an explicit
+# license allow-list, source registries, and duplicate/wildcard hygiene, so a
+# `cargo deny check` is a repeatable supply-chain gate.
+#
+# Authoring note (T-0208, claude-opus-60): this file is NEW and additive. The
+# audit lane is under a hard zero-edit constraint on src/, Cargo.toml,
+# Cargo.lock, tests/, fuzz/ (a concurrent reviewer, T-0207, runs byte-checks
+# against them). Every finding here is triaged by CONFIG only; any finding that
+# would require a dependency CHANGE is recorded in the audit report
+# (benchmarks/supply-chain-v05/), never actioned in this lane.
+#
+# Verified against: cargo-deny 0.20.2, advisory-db commit
+# b5fc89b8be99e96f79194d8a6f11e9b4143b99f0 (2026-07-17), Cargo.lock as of
+# repo commit range of T-0208. Re-run: `cargo deny check` from this directory.
+
+[graph]
+# Deliberately NOT target-filtered. The product ships macOS/arm64 only
+# (Project Prism / image-app rule), so winapi/wasm/js-sys entries in the
+# lockfile are never actually built — but an audit is more honest when it
+# checks the FULL lockfile graph rather than pruning platform-specific crates
+# out of view. Leaving `targets` empty checks all targets.
+all-features = false
+no-default-features = false
+
+[output]
+feature-depth = 1
+
+# ---------------------------------------------------------------------------
+# advisories: RUSTSEC vulnerability / unmaintained / yanked posture.
+# ---------------------------------------------------------------------------
+[advisories]
+# Default db-urls (https://github.com/rustsec/advisory-db). No ignores: the
+# tree is clean as audited (0 vulnerabilities, 0 unmaintained, 0 yanked). If a
+# future advisory lands against a pinned dep, triage it in the report FIRST —
+# do not add an `ignore` entry without a written per-advisory justification.
+ignore = []
+
+# ---------------------------------------------------------------------------
+# licenses: explicit allow-list. Every crate in the lockfile resolves to a
+# permissive license satisfied by this set (verified via `cargo license`,
+# T-0208). The runtime (shipping) tree is even narrower — Apache-2.0 OR MIT
+# only. Unicode-3.0 is required by `unicode-ident`, which appears only in the
+# dev-dependency (criterion) subtree.
+# ---------------------------------------------------------------------------
+[licenses]
+allow = [
+    "MIT",
+    "Apache-2.0",
+    "Unicode-3.0",
+]
+confidence-threshold = 0.8
+exceptions = []
+# `unicode-ident` (dev-tree only, via proc-macro2) declares
+# `(MIT OR Apache-2.0) AND Unicode-3.0`. cargo-deny 0.20.2 satisfies it via the
+# MIT/Apache branch and does not consult the `AND Unicode-3.0` term, so it
+# reports "Unicode-3.0" as an unmatched allowance. We KEEP Unicode-3.0 in the
+# allow-list anyway — it is a genuine license term carried by a crate in the
+# graph, and keeping it documented future-proofs the gate if a later cargo-deny
+# tightens AND-expression evaluation. Silence only that specific unused-allow
+# note so the run stays clean; this hides no real license.
+unused-allowed-license = "allow"
+
+[licenses.private]
+# Do NOT ignore unpublished crates. This was `true` while pngprism carried no
+# `license` field — the suppression was the only thing keeping an unlicensed
+# crate from failing its own audit. pngprism now declares
+# `MIT OR Apache-2.0` (ADR-0033), which is in the allow-list above, so it
+# passes on its own merits; verified by running this check with the suppression
+# removed before deleting it.
+#
+# Keeping it `false` is the point: with `ignore = true`, deleting the `license`
+# field would silently pass. Now the audit FAILS if the crate ever stops
+# declaring its license — the claim is wired to its check (ADR-0025), rather
+# than resting on a flag that keys on `publish = false`.
+ignore = false
+
+# ---------------------------------------------------------------------------
+# bans: duplicate-version and wildcard hygiene.
+# ---------------------------------------------------------------------------
+[bans]
+# `warn`, not `deny`: the lockfile carries two `syn` versions (2.0.119 and
+# 3.0.0). Both live EXCLUSIVELY in the dev-dependency (criterion) subtree —
+# syn 3.0.0 via serde_derive, syn 2.0.119 via zerocopy-derive — so neither is
+# compiled into the shipping artifact. Removing the duplicate would require a
+# dev-dependency change (out of this lane's zero-edit scope), so it is recorded
+# as a benign, dev-only finding in the audit report rather than config-skipped.
+multiple-versions = "warn"
+# cargo-deny examines duplicate versions in NORMAL/BUILD dependencies by default
+# but SKIPS dev-dependencies unless this is set (default: false). Because the
+# only duplicate here (`syn`) is dev-only, the default would leave
+# `multiple-versions` with nothing to look at — the gate would stay silent and
+# the finding above would be invisible. Enable dev-dep inspection so the gate
+# actually SURFACES the duplicate as a `warning[duplicate]` (documented, not
+# hidden). Set to true deliberately, with eyes open that it makes the run emit
+# that dev-only warning.
+multiple-versions-include-dev = true
+# No dependency in the tree uses a `*` version requirement; deny keeps it so.
+wildcards = "deny"
+highlight = "all"
+workspace-default-features = "allow"
+external-default-features = "allow"
+allow = []
+deny = []
+skip = []
+skip-tree = []
+
+# ---------------------------------------------------------------------------
+# sources: only the official crates.io registry is permitted; no git sources.
+# Every dependency resolves from crates.io (verified in Cargo.lock).
+# ---------------------------------------------------------------------------
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]
+allow-git = []
+
+[sources.allow-org]
+github = []
+gitlab = []
+bitbucket = []

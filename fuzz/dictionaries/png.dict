@@ -1,0 +1,67 @@
+# libFuzzer dictionary for the prism-quant PNG decoder (T-0207).
+#
+# Tokens the mutator splices in so it reaches deep decoder states without
+# having to rediscover PNG's magic constants byte-by-byte: the signature, the
+# critical + ancillary chunk type codes prism-quant recognises, canonical
+# empty/short chunk framings, zlib stream headers, and the IHDR field values
+# (colour types, bit depths, interlace/filter/compression methods) that steer
+# the parser down each branch. Format: libFuzzer `name="token"` with \xNN
+# escapes (https://llvm.org/docs/LibFuzzer.html#dictionaries).
+
+# --- 8-byte PNG signature ---------------------------------------------------
+sig="\x89PNG\x0d\x0a\x1a\x0a"
+
+# --- chunk type codes (critical) --------------------------------------------
+ihdr="IHDR"
+plte="PLTE"
+idat="IDAT"
+iend="IEND"
+
+# --- chunk type codes (ancillary prism-quant parses) ------------------------
+trns="tRNS"
+gama="gAMA"
+iccp="iCCP"
+
+# --- other well-known ancillary codes (exercise the ignore path) ------------
+srgb="sRGB"
+bkgd="bKGD"
+phys="pHYs"
+text="tEXt"
+ztxt="zTXt"
+chrm="cHRM"
+time="tIME"
+
+# --- canonical whole-chunk framings -----------------------------------------
+# Empty IEND with its real CRC (length 0, kind IEND, crc 0xAE426082).
+iend_full="\x00\x00\x00\x00IEND\xae\x42\x60\x82"
+# 13-byte IHDR length prefix.
+ihdr_len="\x00\x00\x00\x0dIHDR"
+
+# --- IHDR field values ------------------------------------------------------
+# Colour types: 0 gray, 2 rgb, 3 palette, 4 gray+alpha, 6 rgba (+ invalids 1,5,7)
+ctype_gray="\x00"
+ctype_rgb="\x02"
+ctype_palette="\x03"
+ctype_ga="\x04"
+ctype_rgba="\x06"
+# Bit depths.
+depth1="\x01"
+depth2="\x02"
+depth4="\x04"
+depth8="\x08"
+depth16="\x10"
+# Interlace: none / Adam7.
+interlace_none="\x00"
+interlace_adam7="\x01"
+
+# --- zlib / deflate stream headers (IDAT payload prefixes) ------------------
+zlib_fastest="\x78\x01"
+zlib_default="\x78\x9c"
+zlib_best="\x78\xda"
+deflate_stored="\x01"
+deflate_final_stored="\x00\x00\xff\xff"
+
+# --- degenerate dimensions --------------------------------------------------
+dims_1x1="\x00\x00\x00\x01\x00\x00\x00\x01"
+dims_zero="\x00\x00\x00\x00\x00\x00\x00\x00"
+dims_giant="\x7f\xff\xff\xff\x7f\xff\xff\xff"

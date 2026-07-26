@@ -1,0 +1,18 @@
+# DUAL-TOOLCHAIN PIN — scoped to `fuzz/` ONLY (T-0207).
+#
+# cargo-fuzz drives libFuzzer through `-Z` unstable flags (`-Zsanitizer`,
+# `-Zbuild-std`) that ONLY the nightly compiler accepts, so the fuzz crate
+# must build on nightly. The release crate one directory up
+# (`../rust-toolchain.toml`) stays pinned to the stable 1.96.1 release train
+# and MUST NOT move — this file exists so that the nightly requirement is
+# contained entirely within `fuzz/` and never leaks up to the shipping build.
+#
+# Effectiveness caveat (identical to `../rust-toolchain.toml`): this pin is
+# honoured only by a rustup-PROXIED cargo whose override search walks up from
+# the cwd. On a machine whose PATH `cargo` is a plain Homebrew binary (as this
+# dev box has), it is inert; there, invoke the nightly toolchain explicitly —
+# put the nightly bin dir on the FRONT of PATH so the nightly cargo/rustc pair
+# is selected (a bare `+nightly` needs a rustup proxy, which the Homebrew
+# cargo is not). The exact recipe is in `fuzz/README.md`.
+[toolchain]
+channel = "nightly"

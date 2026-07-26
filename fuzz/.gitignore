@@ -1,0 +1,12 @@
+# cargo-fuzz build + runtime artifacts (never committed).
+/target
+# libFuzzer crash/leak/timeout artifacts land here at run time; any genuine
+# finding is MINIMISED and promoted into the committed `crash-regressions/`
+# dir (wired into `cargo test`), so this raw dir stays ignored.
+/artifacts
+# `cargo fuzz coverage` output.
+/coverage
+# Ephemeral writable corpus used for fuzz runs so libFuzzer's coverage-
+# increasing discoveries never mutate the committed, byte-reproducible seed
+# corpus under `corpus/` (which `generate_seed_corpus.py --check` guards).
+/corpus-work

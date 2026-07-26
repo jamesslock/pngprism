@@ -1,0 +1,48 @@
+# T-0207 fuzz crate. Deliberately a SEPARATE package from `prism-quant`
+# (linked by path) and its OWN workspace root (`[workspace]` below), so that:
+#   * it is invisible to `cargo build/test --manifest-path ../Cargo.toml`
+#     (the release build the reviewer byte-checks never sees this crate), and
+#   * cargo-fuzz's libFuzzer/sanitizer build settings never touch the crate
+#     under test.
+# It requires the NIGHTLY toolchain (see `rust-toolchain.toml` in this dir —
+# scoped to `fuzz/` only; the release crate stays pinned to 1.96.1). See
+# `fuzz/README.md` for the dual-toolchain rationale and run recipe.
+[package]
+name = "prism-quant-fuzz"
+version = "0.0.0"
+publish = false
+edition = "2024"
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+libfuzzer-sys = "0.4"
+
+# Package renamed to `pngprism` (T-0213); imported under its kept library
+# target name `prism_quant` via the dependency-rename form, so the fuzz
+# targets' `use prism_quant::…` imports are unchanged.
+[dependencies.prism_quant]
+package = "pngprism"
+path = ".."
+
+# Own workspace root: isolates this crate from the release crate entirely.
+[workspace]
+
+[profile.release]
+debug = 1
+
+# Each target is `panic = "abort"`-friendly under libFuzzer; keep them minimal.
+[[bin]]
+name = "decode_png"
+path = "fuzz_targets/decode_png.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "quantize_pipeline"
+path = "fuzz_targets/quantize_pipeline.rs"
+test = false
+doc = false
+bench = false

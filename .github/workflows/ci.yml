@@ -1,0 +1,82 @@
+name: CI
+
+# The crate's own suite. This is NOT Project Prism's release gate — that runs
+# lab-side (see README, "Where the evidence lives"). A green run here means the
+# implementation agrees with its vendored Python oracle and its own corpora; it
+# makes no claim about the 2,452-cell parity matrix or the 815-unit golden
+# corpus, which this repository does not carry.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  test:
+    name: test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        # macOS is the development platform; Linux is here because a consumer
+        # is more likely to be on it than not, and the crate claims portability
+        # it has never had a machine to check.
+        os: [macos-latest, ubuntu-latest]
+    steps:
+      - uses: actions/checkout@v4
+
+      # rust-toolchain.toml pins the version; this action honors it.
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+
+      # tests/caps.rs runs the vendored Python oracle as a subprocess and
+      # asserts the port agrees with it — the parity rule's differential test.
+      # Without Python that suite cannot run, so make its absence loud.
+      - name: Check Python is available for the oracle parity suite
+        run: python3 --version
+
+      - name: Test (debug)
+        run: cargo test --locked --all-targets
+
+      - name: Test (release)
+        run: cargo test --locked --release
+
+      - name: Doc tests
+        run: cargo test --locked --doc
+
+  lint:
+    name: clippy + fmt + docs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Clippy (warnings are errors)
+        run: cargo clippy --locked --all-targets -- -D warnings
+
+      - name: Formatting
+        run: cargo fmt --all -- --check
+
+      - name: Rustdoc (warnings are errors)
+        env:
+          RUSTDOCFLAGS: -D warnings
+        run: cargo doc --locked --no-deps
+
+  audit:
+    name: cargo-deny (licenses, advisories, bans, sources)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # deny.toml's [licenses.private] ignore is deliberately `false`: if the
+      # crate ever stops declaring its own license, this job FAILS rather than
+      # passing quietly (ADR-0033 §5).
+      - uses: EmbarkStudios/cargo-deny-action@v2
