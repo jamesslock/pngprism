@@ -19,6 +19,16 @@ name: Release
 on:
   push:
     tags: ["v*"]
+  # Dry run: exercises the tag/changelog checks, both platforms' suites and all
+  # three binary builds, and STOPS before publishing anything. Use it before a
+  # real tag — `cargo publish` cannot be undone, so the last rehearsal should
+  # not be the performance.
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to rehearse (e.g. 0.5.0) — nothing is published"
+        required: true
+        type: string
 
 permissions:
   contents: write
@@ -28,7 +38,7 @@ env:
 
 jobs:
   verify:
-    name: verify the tag (${{ matrix.os }})
+    name: verify (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: true
@@ -47,21 +57,32 @@ jobs:
             sudo apt-get update && sudo apt-get install -y zopfli
           fi
 
-      - name: The tag must match the version in Cargo.toml
+      - name: Resolve the version under release
+        id: v
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            version="${{ inputs.version }}"
+          else
+            version="${GITHUB_REF_NAME#v}"
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "releasing: $version"
+
+      - name: The version must match Cargo.toml
         shell: bash
         run: |
           manifest="$(sed -n 's/^version = "\(.*\)"/\1/p' Cargo.toml | head -1)"
-          tag="${GITHUB_REF_NAME#v}"
-          echo "Cargo.toml: $manifest / tag: $tag"
-          [ "$manifest" = "$tag" ] || {
-            echo "::error::tag $GITHUB_REF_NAME does not match Cargo.toml version $manifest"
+          echo "Cargo.toml: $manifest / requested: ${{ steps.v.outputs.version }}"
+          [ "$manifest" = "${{ steps.v.outputs.version }}" ] || {
+            echo "::error::requested ${{ steps.v.outputs.version }} but Cargo.toml says $manifest"
             exit 1
           }
 
       - name: The CHANGELOG must have an entry for this version
         shell: bash
-        run: grep -q "^## ${GITHUB_REF_NAME#v}" CHANGELOG.md || {
-          echo "::error::no CHANGELOG.md section for ${GITHUB_REF_NAME#v}"; exit 1; }
+        run: grep -q "^## ${{ steps.v.outputs.version }}" CHANGELOG.md || {
+          echo "::error::no CHANGELOG.md section for ${{ steps.v.outputs.version }}"; exit 1; }
 
       - run: cargo test --locked --all-targets
       - run: cargo test --locked --release
@@ -93,7 +114,7 @@ jobs:
       - name: Package the archive
         shell: bash
         run: |
-          name="pngprism-${GITHUB_REF_NAME}-${{ matrix.target }}"
+          name="pngprism-${GITHUB_REF_NAME#refs/heads/}-${{ matrix.target }}"
           mkdir "$name"
           cp target/${{ matrix.target }}/release/pngprism "$name/"
           cp README.md LICENSE-MIT LICENSE-APACHE THIRD-PARTY-NOTICES.md "$name/"
@@ -110,6 +131,7 @@ jobs:
   release:
     name: GitHub Release
     needs: binaries
+    if: startsWith(github.ref, 'refs/tags/v')   # never on a dry run
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -132,6 +154,7 @@ jobs:
   publish:
     name: publish to crates.io
     needs: [verify, binaries]
+    if: startsWith(github.ref, 'refs/tags/v')   # never on a dry run
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
