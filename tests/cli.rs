@@ -24,6 +24,35 @@ fn smoke_path(id_wanted: Option<&str>) -> PathBuf {
     }
 }
 
+/// Whether `--pack max` can run here: it shells out to `zopflipng`, an OPTIONAL
+/// external tool (the default pack mode is `none`, so the common path never
+/// looks for it).
+///
+/// This asks the CRATE's own resolver rather than re-implementing the lookup.
+/// There are already two implementations of that policy held in lockstep — the
+/// Rust one and the Python oracle's — and a third, living in the tests and
+/// quietly disagreeing with both, is exactly the forked brain the parity rule
+/// exists to prevent. (An earlier version of this helper checked only
+/// `PRISM_ZOPFLIPNG` and `PATH`, and would have skipped in-tree runs where the
+/// vendored pinned build was resolvable.) Widening access beats copying, the
+/// same call made for `sha256`.
+///
+/// Tests that need it SKIP when it is absent rather than fail: a consumer who
+/// installed the crate and not an optional third-party binary has not broken
+/// anything, and a red suite would say they had. CI installs it, so the path is
+/// still exercised on every push.
+fn zopflipng_available() -> bool {
+    prism_quant::pack::default_zopflipng().is_some()
+}
+
+fn skip_no_zopflipng(test: &str) {
+    eprintln!(
+        "{test}: SKIPPED the --pack max cases — zopflipng not found. It is an \
+         optional external tool; set PRISM_ZOPFLIPNG or install it \
+         (`brew install zopfli`, or the `zopfli` package on most distros)."
+    );
+}
+
 fn run_cli(args: &[&str]) -> Output {
     Command::new(env!("CARGO_BIN_EXE_pngprism"))
         .args(args)
@@ -290,7 +319,16 @@ fn cli_v02_dither_pack_success() {
             "v2",
         ],
     ];
+    let have_zopflipng = zopflipng_available();
+    if !have_zopflipng {
+        skip_no_zopflipng("cli_v02_dither_pack_success");
+    }
     for flags in flag_sets {
+        // Only the `--pack max` sets need the optional binary; every other set
+        // still runs, so absence costs those cases and nothing else.
+        if !have_zopflipng && flags.contains(&"max") {
+            continue;
+        }
         let mut args = vec![item, out.as_str(), "--colors", "16"];
         args.extend_from_slice(flags);
         let completed = run_cli(&args);
@@ -437,6 +475,12 @@ fn cli_v02_determinism() {
     let tmp = TempDir::new("determinism");
     let out_a = tmp.path("a.png");
     let out_b = tmp.path("b.png");
+    // The twin run is `--pack max` end to end, so without zopflipng there is
+    // nothing to compare; skipped whole rather than silently weakened.
+    if !zopflipng_available() {
+        skip_no_zopflipng("cli_v02_determinism");
+        return;
+    }
     let item = smoke_path(Some("syn-hidden-rgb-random"));
     let item = item.to_str().expect("utf8 path");
     let flags = [

@@ -177,7 +177,8 @@ const V2_ZOPFLI_ARGUMENTS: [&str; 1] = ["-m"];
 /// and pixel-compares every result — but exact byte reproduction of published
 /// figures requires `PRISM_ZOPFLIPNG`, which is why the harnesses set it rather
 /// than relying on this lookup.
-fn default_zopflipng() -> Option<PathBuf> {
+#[doc(hidden)]
+pub fn default_zopflipng() -> Option<PathBuf> {
     resolve_zopflipng(
         std::env::var_os("PRISM_ZOPFLIPNG"),
         std::env::var_os("PATH"),

@@ -41,6 +41,24 @@ jobs:
       - name: Check Python is available for the oracle parity suite
         run: python3 --version
 
+      # `--pack max` shells out to zopflipng. It is genuinely optional — the
+      # default pack mode is `none`, and the tests SKIP when it is missing so a
+      # consumer without it does not see a red suite. That makes installing it
+      # here load-bearing: without this step the `--pack max` path would skip on
+      # every run and nothing would ever exercise it.
+      - name: Install zopflipng (exercises the --pack max path)
+        run: |
+          if [ "$RUNNER_OS" = "macOS" ]; then
+            brew install zopfli
+          else
+            sudo apt-get update && sudo apt-get install -y zopfli
+          fi
+          command -v zopflipng
+
+      # Fail loudly rather than skipping quietly: on CI the tool must be present.
+      - name: Assert the --pack max path will actually run
+        run: test -n "$(command -v zopflipng)"
+
       - name: Test (debug)
         run: cargo test --locked --all-targets
 
