@@ -60,10 +60,36 @@ fn lab_reference_dir() -> Option<PathBuf> {
     // that most needs to be un-skippable in our own CI: it is the only thing
     // keeping the shipped oracle and the lab original from forking.
     if !smoke::in_research_tree() {
+        eprintln!(
+            "oracle_pins: SKIPPED the anti-fork check — no lab checkout found, \
+             so there is no original to compare against. The frozen-pin check \
+             still ran, and it is what protects a standalone consumer."
+        );
         return None;
     }
-    let dir = smoke::lab_root()?.join("lab/reference");
-    dir.is_dir().then_some(dir)
+    let lab = smoke::lab_root()?;
+    let dir = lab.join("lab/reference");
+    if dir.is_dir() {
+        return Some(dir);
+    }
+    // A lab root WITH no reference directory is a third state, and collapsing
+    // it into the ordinary skip is how a sparse or half-finished checkout gets
+    // to report a green anti-fork run while comparing nothing. "No lab" and
+    // "a lab that cannot answer the question" are different facts.
+    assert!(
+        std::env::var_os("PRISM_REQUIRE_LAB").is_none(),
+        "found a lab checkout at {} but it has no lab/reference/ — the \
+         anti-fork check cannot run. Complete the checkout, or unset \
+         PRISM_REQUIRE_LAB to allow skipping.",
+        lab.display()
+    );
+    eprintln!(
+        "oracle_pins: SKIPPED — a lab checkout was found at {} but it has no \
+         lab/reference/, so there is nothing to compare against. This is an \
+         incomplete checkout, not a standalone one.",
+        lab.display()
+    );
+    None
 }
 
 #[test]
@@ -83,12 +109,9 @@ fn vendored_oracle_matches_its_frozen_pins() {
 
 #[test]
 fn vendored_oracle_is_byte_identical_to_the_lab_original() {
+    // `lab_reference_dir` reports which of the two skip reasons applies, and
+    // aborts instead under PRISM_REQUIRE_LAB.
     let Some(lab) = lab_reference_dir() else {
-        eprintln!(
-            "oracle_pins: SKIPPED the anti-fork check — lab/reference/ is not \
-             present (crate is outside the research tree). The frozen-pin check \
-             still ran."
-        );
         return;
     };
     for (name, _) in ORACLE_PINS {
