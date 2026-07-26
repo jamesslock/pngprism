@@ -89,6 +89,29 @@ jobs:
           RUSTDOCFLAGS: -D warnings
         run: cargo doc --locked --no-deps
 
+  surface:
+    name: publication surface
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # This repository was extracted from a private research tree. The rule
+      # that lab-only material never lands here used to be enforced by the
+      # generator that assembled the public tree; that generator is retired, so
+      # the rule is enforced here instead. Publishing is permanent — a file
+      # added by accident cannot be recalled by deleting it later.
+      - name: Top-level entries must all be declared
+        shell: bash
+        run: |
+          declared="$(grep -v '^#' .github/publication-surface.txt | grep -v '^$' | sort -u)"
+          actual="$(git ls-files | cut -d/ -f1 | sort -u)"
+          if ! diff <(echo "$declared") <(echo "$actual"); then
+            echo "::error::the top-level surface changed. Lines starting '>' are"
+            echo "::error::undeclared additions: adding one is a publication decision."
+            echo "::error::If intended, add it to .github/publication-surface.txt."
+            exit 1
+          fi
+          echo "surface matches: $(echo "$actual" | wc -l | tr -d ' ') declared entries"
+
   audit:
     name: cargo-deny (licenses, advisories, bans, sources)
     runs-on: ubuntu-latest

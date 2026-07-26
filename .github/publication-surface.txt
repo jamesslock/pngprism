@@ -1,0 +1,31 @@
+# Every top-level tracked entry in this repository, one per line.
+#
+# This repository was extracted from a private research monorepo, and the
+# guarantee that lab-only material never reaches it used to come from the
+# generator that assembled it. That generator is retired — the crate is now
+# developed here directly — so the guarantee lives here instead, as a check
+# rather than a memory.
+#
+# Adding an entry is a PUBLICATION decision: this repository is public and
+# permanent. Anything added here is visible forever, so the line you add to
+# this file is the record of having decided that on purpose.
+.github
+.gitignore
+Cargo.lock
+Cargo.toml
+CHANGELOG.md
+CONTRIBUTING.md
+LICENSE-APACHE
+LICENSE-MIT
+PROVENANCE.md
+README.md
+REFERENCES.md
+THIRD-PARTY-NOTICES.md
+benches
+deny.toml
+docs
+examples
+fuzz
+rust-toolchain.toml
+src
+tests
