@@ -75,23 +75,58 @@ fn crate_dir() -> &'static Path {
     Path::new(env!("CARGO_MANIFEST_DIR"))
 }
 
-/// The repo root, when this crate is checked out at
-/// `research/project-prism/lib/prism-quant` inside it. `None` anywhere else —
-/// the four ancestors still *exist* as a path, they just don't mean anything,
-/// which is why every caller goes through [`resolve`] rather than joining onto
-/// this directly.
-pub fn repo_root() -> Option<PathBuf> {
-    let candidate = crate_dir().ancestors().nth(4)?;
-    candidate
-        .join("research/project-prism/lib/prism-quant/Cargo.toml")
-        .is_file()
-        .then(|| candidate.to_path_buf())
+/// Paths recorded in the manifest carry the prefix they had when this crate
+/// lived inside the research monorepo. Those strings are evidence — the lab
+/// deliberately resolves them at read time rather than rewriting the records
+/// (`prism_paths.resolve()` does the same thing on the Python side), so this is
+/// the Rust half of that convention.
+const RECORDED_PREFIX: &str = "research/project-prism/";
+
+/// The `pngprism-lab` research checkout, when one is available.
+///
+/// `PRISM_LAB_DIR` if set, else the conventional sibling checkout beside this
+/// crate. `None` for a standalone consumer, which is the normal case for
+/// anyone who is not this project — the vendored fixtures cover them.
+///
+/// This used to look for `research/project-prism/lib/prism-quant/Cargo.toml`
+/// four ancestors up, which was correct while the crate was a subdirectory of
+/// the monorepo. After the split it could never match, so every research-tree
+/// check silently degraded to its skip path while still reporting `ok`. Locate
+/// the lab the same way the lab locates the crate: an explicit override, then
+/// the sibling convention.
+pub fn lab_root() -> Option<PathBuf> {
+    if let Some(dir) = std::env::var_os("PRISM_LAB_DIR") {
+        let path = PathBuf::from(dir);
+        return path.join(".prism-root").is_file().then_some(path);
+    }
+    let sibling = crate_dir().parent()?.join("pngprism-lab");
+    sibling.join(".prism-root").is_file().then_some(sibling)
 }
 
-/// True when running inside the Prism research tree, where all 47 files and the
-/// lab corpora are present.
+/// An absolute path for a path as RECORDED in the manifest, or `None` without a
+/// lab checkout. Strips the monorepo prefix the records still carry.
+pub fn resolve_recorded(recorded: &str) -> Option<PathBuf> {
+    let relative = recorded.strip_prefix(RECORDED_PREFIX).unwrap_or(recorded);
+    Some(lab_root()?.join(relative))
+}
+
+/// True when a lab checkout is available, so all 47 files and the lab corpora
+/// resolve.
+///
+/// Set `PRISM_REQUIRE_LAB=1` to make its absence a hard failure instead of a
+/// skip. The lab's own gate runner sets it: for us a missing lab means a
+/// misconfigured run, and a check that quietly tests nothing is the defect this
+/// program exists to avoid. For an outside contributor the skip is correct, so
+/// the strictness is opt-in rather than the default.
 pub fn in_research_tree() -> bool {
-    repo_root().is_some()
+    let found = lab_root().is_some();
+    assert!(
+        found || std::env::var_os("PRISM_REQUIRE_LAB").is_none(),
+        "PRISM_REQUIRE_LAB is set but no lab checkout was found — set \
+         PRISM_LAB_DIR, or clone pngprism-lab beside this crate. Refusing to \
+         skip the research-tree checks silently."
+    );
+    found
 }
 
 pub fn vendored_dir() -> PathBuf {
@@ -145,8 +180,7 @@ pub fn rows() -> Vec<SmokeRow> {
 /// images and we are outside the research tree. See the module docs for the
 /// order and why the in-tree original wins.
 pub fn resolve(row: &SmokeRow) -> Option<PathBuf> {
-    if let Some(root) = repo_root() {
-        let in_tree = root.join(&row.path);
+    if let Some(in_tree) = resolve_recorded(&row.path) {
         if in_tree.is_file() {
             return Some(in_tree);
         }

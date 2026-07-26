@@ -29,8 +29,7 @@ fn fixture(name: &str) -> PathBuf {
 /// (ADR-0033 §2 — the image is Prism's own CC0 synthetic corpus, §6). Both are
 /// checked against [`GOLDEN_FIRST_UNIT_SHA256`] before use.
 fn normal_source() -> PathBuf {
-    let path = smoke::repo_root()
-        .map(|root| root.join("research/project-prism/benchmarks/golden-corpus/manifest.json"))
+    let path = smoke::resolve_recorded("benchmarks/golden-corpus/manifest.json")
         .filter(|manifest| manifest.is_file())
         .map_or_else(
             || fixture("golden-first-unit.png"),
@@ -42,9 +41,8 @@ fn normal_source() -> PathBuf {
                 let rest = &text[start..];
                 let open = rest.find('"').expect("open quote") + 1;
                 let close = rest[open..].find('"').expect("close quote") + open;
-                smoke::repo_root()
-                    .expect("in the research tree")
-                    .join(&rest[open..close])
+                smoke::resolve_recorded(&rest[open..close])
+                    .expect("a lab checkout, since the manifest resolved")
             },
         );
     let bytes = std::fs::read(&path).unwrap_or_else(|err| panic!("read {}: {err}", path.display()));

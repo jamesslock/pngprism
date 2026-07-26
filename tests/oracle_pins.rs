@@ -20,6 +20,9 @@
 
 use std::path::{Path, PathBuf};
 
+#[path = "common/smoke.rs"]
+mod smoke;
+
 /// `(filename, sha256)` — update in the SAME commit that re-copies the file.
 const ORACLE_PINS: [(&str, &str); 4] = [
     (
@@ -44,9 +47,22 @@ fn oracle_dir() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/oracle")
 }
 
-/// The lab's original, when this crate is checked out inside the research tree.
+/// The lab's original, when a `pngprism-lab` checkout is available.
+///
+/// This used to be `CARGO_MANIFEST_DIR/../../lab/reference`, which was right
+/// while the crate sat at `research/project-prism/lib/prism-quant` inside the
+/// monorepo. After the split it resolves outside any checkout and can never
+/// exist, so the anti-fork check below — added *because* of the split — was
+/// disabled by it, passing green while comparing nothing.
 fn lab_reference_dir() -> Option<PathBuf> {
-    let dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../lab/reference");
+    // Via `in_research_tree` rather than `lab_root` directly, so that
+    // PRISM_REQUIRE_LAB makes a missing lab fatal here too. This is the check
+    // that most needs to be un-skippable in our own CI: it is the only thing
+    // keeping the shipped oracle and the lab original from forking.
+    if !smoke::in_research_tree() {
+        return None;
+    }
+    let dir = smoke::lab_root()?.join("lab/reference");
     dir.is_dir().then_some(dir)
 }
 

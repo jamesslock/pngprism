@@ -91,16 +91,17 @@ fn vendored_copies_match_their_manifest_digests() {
 /// as a confusing property mismatch elsewhere.
 #[test]
 fn in_tree_originals_match_the_same_digests() {
-    let Some(root) = smoke::repo_root() else {
+    if !smoke::in_research_tree() {
         eprintln!(
-            "smoke_vendor: SKIPPED the in-tree original check — not inside the \
-             research tree. The vendored-copy pins still ran."
+            "smoke_vendor: SKIPPED the in-tree original check — no lab checkout \
+             found. The vendored-copy pins still ran. Set PRISM_REQUIRE_LAB=1 to \
+             make this a failure instead."
         );
         return;
-    };
+    }
     let mut checked = 0;
     for row in smoke::rows() {
-        let path = root.join(&row.path);
+        let path = smoke::resolve_recorded(&row.path).expect("lab checkout, just confirmed");
         let bytes = std::fs::read(&path)
             .unwrap_or_else(|err| panic!("{}: read {}: {err}", row.id, path.display()));
         assert_eq!(

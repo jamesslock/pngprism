@@ -55,6 +55,18 @@ those specific test cases skip and everything else runs. Install it with
 `brew install zopfli` or your distro's `zopfli` package if you are touching the
 packing code, since otherwise you will not be exercising it.
 
+**The research tree is optional too, and you almost certainly don't have it.**
+A few checks compare against the private `pngprism-lab` corpora — the full
+47-image smoke set, and the guard that the vendored oracle has not forked from
+its original. Without a lab checkout those skip and say so; everything that
+protects *you* still runs, because the oracle is also pinned by digest here.
+
+If you do have the lab, it is found automatically as a sibling checkout, or via
+`PRISM_LAB_DIR=/path/to/pngprism-lab`. Setting `PRISM_REQUIRE_LAB=1` turns a
+missing lab into a failure rather than a skip — worth doing in any automation
+that is *supposed* to have one, since a check that quietly tests nothing is
+worse than one that fails.
+
 ## What CI checks
 
 Every push runs, on macOS and Linux: the full suite in debug and release, doc
