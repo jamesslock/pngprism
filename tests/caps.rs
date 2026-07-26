@@ -37,8 +37,8 @@
 
 use flate2::Compression;
 use flate2::write::ZlibEncoder;
-use prism_quant::Kind;
-use prism_quant::png::{
+use pngprism::Kind;
+use pngprism::png::{
     MAX_DECODED_SCANLINE_BYTES, MAX_DIMENSION, MAX_INPUT_BYTES, MAX_PIXELS, decode_png,
     read_png_file,
 };

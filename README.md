@@ -17,14 +17,28 @@ pngprism input.png output.png --colors 256
 
 ## Status
 
-**Version 0.5.0, unreleased.** Not on crates.io (`publish = false`), no
-API-stability promise, and the version number does not imply semver guarantees
-yet. It is usable — the CLI is contract-tested and the output is verified
-lossless — but it is pre-1.0 and the public interface may change.
+**Version 0.5.0, pre-1.0.** Usable — the CLI is contract-tested and output is
+verified lossless — but the API is not stable yet, and 0.1–0.4 were internal to
+the research program this came out of.
+
+**Versioning is explicit about one unusual thing:** output bytes are part of
+the contract. A change that alters the bytes produced for an existing flag
+combination is *breaking* and takes a minor bump, even if the files only get
+smaller. See [`CHANGELOG.md`](CHANGELOG.md) for the policy and the release
+history.
 
 ## Install
 
 Requires Rust 1.87+ (edition 2024).
+
+```bash
+cargo add pngprism        # library
+cargo install pngprism    # CLI
+```
+
+Or grab a prebuilt binary for macOS or Linux from the
+[releases page](https://github.com/jamesslock/pngprism/releases). To build from
+source:
 
 ```bash
 git clone https://github.com/jamesslock/pngprism

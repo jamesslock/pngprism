@@ -56,7 +56,7 @@ fn vendored_oracle_matches_its_frozen_pins() {
         let path = oracle_dir().join(name);
         let bytes = std::fs::read(&path)
             .unwrap_or_else(|e| panic!("read vendored oracle {}: {e}", path.display()));
-        let actual = prism_quant::sha256::hex(&bytes);
+        let actual = pngprism::sha256::hex(&bytes);
         assert_eq!(
             actual, expected,
             "{name} drifted from its frozen pin — if this edit is intended, \

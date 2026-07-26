@@ -3,7 +3,7 @@
 //! statuses (0 success, 2 usage, 3 data, 5 io), one-line diagnostics on
 //! stderr, stdout empty on failure, the success summary line.
 
-use prism_quant::png;
+use pngprism::png;
 use std::path::PathBuf;
 use std::process::{Command, Output};
 
@@ -42,7 +42,7 @@ fn smoke_path(id_wanted: Option<&str>) -> PathBuf {
 /// anything, and a red suite would say they had. CI installs it, so the path is
 /// still exercised on every push.
 fn zopflipng_available() -> bool {
-    prism_quant::pack::default_zopflipng().is_some()
+    pngprism::pack::default_zopflipng().is_some()
 }
 
 fn skip_no_zopflipng(test: &str) {

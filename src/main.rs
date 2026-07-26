@@ -20,8 +20,8 @@
 //! input), `--version`/`--help`, and the `--report json` machine-readable
 //! report. The contract + semver policy live in `docs/cli-contract.md`.
 
-use prism_quant::dither::parse_dither_strength;
-use prism_quant::{
+use pngprism::dither::parse_dither_strength;
+use pngprism::{
     AdaptiveDefault, COLOR_SPACES, DEFAULT_COLOR_SPACE, DEFAULT_COLORS, DEFAULT_DITHER,
     DEFAULT_DITHER_POLICY, DEFAULT_DITHER_STRENGTH, DEFAULT_HIDDEN_RGB_POLICY, DEFAULT_PACK_MODE,
     DEFAULT_PACK_SEARCH, DITHER_POLICIES, Error, Kind, LABEL, MAX_THREADS, MergeOrder, PACK_MODES,
@@ -628,7 +628,7 @@ fn main() -> ExitCode {
     // the 64 Mi-pixel default (png::MAX_PIXELS). A user raising it above their
     // RAM owns that: the no-OOM guarantee holds at or below the active ceiling.
     if let Some(limit) = max_pixels {
-        prism_quant::png::set_max_pixels(limit);
+        pngprism::png::set_max_pixels(limit);
     }
     let input_path = Path::new(positional[0]);
     let output_path = Path::new(positional[1]);
@@ -636,7 +636,7 @@ fn main() -> ExitCode {
     // library writes only to a fresh sibling path, so an identical path, a
     // hardlink, or a symlink can never let candidate publication truncate the
     // source before the never-worse decision is made.
-    let input_bytes = match prism_quant::png::read_png_file(input_path) {
+    let input_bytes = match pngprism::png::read_png_file(input_path) {
         Ok(bytes) => bytes,
         Err(err) => return report_error(&err),
     };

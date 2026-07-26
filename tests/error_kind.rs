@@ -1,10 +1,10 @@
 //! Typed-error taxonomy and oracle-verbatim message regressions.
 
-use prism_quant::dither;
-use prism_quant::pack;
-use prism_quant::png::{self, DecodedImage, Properties};
-use prism_quant::quant;
-use prism_quant::{Kind, Rgba};
+use pngprism::dither;
+use pngprism::pack;
+use pngprism::png::{self, DecodedImage, Properties};
+use pngprism::quant;
+use pngprism::{Kind, Rgba};
 use std::path::Path;
 
 fn tiny_source() -> DecodedImage {

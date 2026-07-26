@@ -24,7 +24,7 @@
 //! fixtures + `manifest.tsv` are read directly. The generator's `--check`
 //! mode is the separate anti-drift guard for the reviewer.
 
-use prism_quant::png;
+use pngprism::png;
 use std::fs::File;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};

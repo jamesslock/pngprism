@@ -20,7 +20,7 @@
 //! bounded by a timeout (`PRISM_ZOPFLIPNG_TIMEOUT_SECS`, default 120s —
 //! `run_zopflipng`), ops hygiene per tri-review kimi F10.
 //!
-//! **Scope note (parity boundary):** the integrated `prism_quant` CLI emits
+//! **Scope note (parity boundary):** the integrated `pngprism` CLI emits
 //! only the final PNG bytes (and derives its summary from re-decoding them),
 //! never the oracle's evidence dataclasses. This port therefore reproduces the
 //! byte-producing and control-flow logic — palette cleanup, encoding, the
@@ -851,7 +851,7 @@ fn zlib_compress9(data: &[u8]) -> Vec<u8> {
     encoder.finish().expect("finish zlib stream")
 }
 
-// --- E-0036 pack seams (`prism_quant._seam_*`; T-0188 spec, T-0192 adoption) -
+// --- E-0036 pack seams (`pngprism._seam_*`; T-0188 spec, T-0192 adoption) -
 //
 // The pack=none emission path can trial a handful of byte-only techniques and
 // keep the smallest stream that re-decodes pixel-identical to the baseline:
@@ -864,7 +864,7 @@ fn zlib_compress9(data: &[u8]) -> Vec<u8> {
 // `--pack none` and no seam flag is named, frozen-off for unnamed peers once
 // any seam flag is explicit, and all-off under `--pack fast|max`.
 
-/// `prism_quant._seam_remap_by_order`: apply a bijective palette permutation
+/// `pngprism._seam_remap_by_order`: apply a bijective palette permutation
 /// `order` (new position -> old index) and consistently remap indices. The
 /// per-pixel color sequence is invariant.
 fn seam_remap_by_order(
@@ -882,7 +882,7 @@ fn seam_remap_by_order(
     (new_palette, new_indices)
 }
 
-/// `prism_quant._seam_order_popularity`: most-frequent index first
+/// `pngprism._seam_order_popularity`: most-frequent index first
 /// (ties -> lower old index).
 fn seam_order_popularity(palette: &[Rgba], indices: &[usize]) -> Vec<usize> {
     let mut frequency = vec![0usize; palette.len()];
@@ -895,7 +895,7 @@ fn seam_order_popularity(palette: &[Rgba], indices: &[usize]) -> Vec<usize> {
     order
 }
 
-/// `prism_quant._seam_order_luminance`: Rec.601 integer luma ascending
+/// `pngprism._seam_order_luminance`: Rec.601 integer luma ascending
 /// (ties -> old index).
 fn seam_order_luminance(palette: &[Rgba]) -> Vec<usize> {
     let luma = |i: usize| -> i64 {
@@ -907,7 +907,7 @@ fn seam_order_luminance(palette: &[Rgba]) -> Vec<usize> {
     order
 }
 
-/// `prism_quant._seam_order_channel_major`: RGBA tuple ascending
+/// `pngprism._seam_order_channel_major`: RGBA tuple ascending
 /// (ties -> old index). Rust tuple `Ord` is lexicographic, matching Python's
 /// tuple comparison.
 fn seam_order_channel_major(palette: &[Rgba]) -> Vec<usize> {
@@ -916,7 +916,7 @@ fn seam_order_channel_major(palette: &[Rgba]) -> Vec<usize> {
     order
 }
 
-/// `prism_quant._seam_order_transparent_front`: when EXACTLY one palette entry
+/// `pngprism._seam_order_transparent_front`: when EXACTLY one palette entry
 /// is non-opaque and it is fully transparent (alpha == 0), move it to index 0
 /// so the emitted tRNS payload trims to a single byte. Returns `None` when
 /// inapplicable.
@@ -932,7 +932,7 @@ fn seam_order_transparent_front(palette: &[Rgba]) -> Option<Vec<usize>> {
     Some(order)
 }
 
-/// `prism_quant._seam_emit_config`: emit a color-type-3 PNG mirroring
+/// `pngprism._seam_emit_config`: emit a color-type-3 PNG mirroring
 /// `png::write_indexed_png`, parameterized by index bit depth and DEFLATE
 /// memLevel. `bit_depth = 8` + `mem_level = 8` reproduces the baseline
 /// `stage_emit` bytes byte-for-byte (memLevel 8 == `zlib.compress(., 9)`).
@@ -988,7 +988,7 @@ fn seam_emit_config(
 /// the lexicographically smallest key wins (mirrors the oracle's `best[0]`).
 type SeamKey = (usize, u8, usize, u8);
 
-/// `prism_quant._seam_emit`: trial the enabled byte-only pack-seam techniques
+/// `pngprism._seam_emit`: trial the enabled byte-only pack-seam techniques
 /// and return the SMALLEST stream that re-decodes pixel-identical to the
 /// baseline, mirroring the oracle's deterministic tie-break exactly.
 pub(crate) fn seam_emit(

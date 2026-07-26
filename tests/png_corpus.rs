@@ -6,7 +6,7 @@
 //! inputs; the only write is the verifier temp file (fresh temp dir,
 //! removed afterwards).
 
-use prism_quant::png::{decode_png, write_indexed_png};
+use pngprism::png::{decode_png, write_indexed_png};
 use std::path::{Path, PathBuf};
 
 #[path = "common/smoke.rs"]

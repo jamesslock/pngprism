@@ -13,8 +13,8 @@
 //! §31 violation these regressions exist to pin). A returned `Err`/early
 //! return is a correct outcome — the input was malformed by construction.
 
-use prism_quant::png;
-use prism_quant::quant;
+use pngprism::png;
+use pngprism::quant;
 use std::panic::{self, AssertUnwindSafe};
 use std::path::PathBuf;
 

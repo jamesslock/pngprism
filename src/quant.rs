@@ -27,7 +27,7 @@ use crate::{Error, Rgba, dither, pack};
 use std::collections::{BTreeMap, HashMap, HashSet};
 use std::path::Path;
 
-/// Pipeline identity strings (`prism_quant.VERSION` / `LABEL`). Unified to the
+/// Pipeline identity strings (`pngprism.VERSION` / `LABEL`). Unified to the
 /// `pngprism 0.5.0` release identity (T-0213); the LABEL keeps its honest
 /// "unproven, metric-validated only" status (no human-acceptability gate).
 pub const VERSION: &str = "0.5.0";
@@ -44,16 +44,16 @@ pub const DEFAULT_DITHER: bool = false;
 /// [`DEFAULT_ADAPTIVE_DEFAULT_POLICY`] (`guarded`), not this.
 pub const DEFAULT_ADAPTIVE_DEFAULT: bool = false;
 
-/// The three named adaptive-default policies (`prism_quant.ADAPTIVE_DEFAULT_POLICIES`,
+/// The three named adaptive-default policies (`pngprism.ADAPTIVE_DEFAULT_POLICIES`,
 /// T-0190/E-0038). `off` and `on` keep their frozen pre-flip meaning; `guarded`
 /// runs unguarded adaptive-unit *unless* the E-0032 structural guard fires.
 pub const ADAPTIVE_DEFAULT_POLICIES: [&str; 3] = ["off", "on", "guarded"];
-/// CLI omission default (`prism_quant.DEFAULT_ADAPTIVE_DEFAULT`): guarded
+/// CLI omission default (`pngprism.DEFAULT_ADAPTIVE_DEFAULT`): guarded
 /// adaptive-unit dithering.
 pub const DEFAULT_ADAPTIVE_DEFAULT_POLICY: &str = "guarded";
 
 /// E-0036 pack-seam omission defaults, adopted default-on for S and R by
-/// T-0192/E-0040 (`prism_quant.DEFAULT_PACK_SEAM_*`). These apply only when
+/// T-0192/E-0040 (`pngprism.DEFAULT_PACK_SEAM_*`). These apply only when
 /// `--pack none` is in effect and no seam flag is named; ARM-M stays off.
 pub const DEFAULT_PACK_SEAM_PALETTE_SORT: bool = true;
 pub const DEFAULT_PACK_SEAM_MEMLEVEL: bool = false;
@@ -91,7 +91,7 @@ pub enum AdaptiveDefault {
 
 impl AdaptiveDefault {
     /// Parse a CLI value; `None` for anything outside the frozen vocabulary
-    /// (`prism_quant.ADAPTIVE_DEFAULT_POLICIES`).
+    /// (`pngprism.ADAPTIVE_DEFAULT_POLICIES`).
     #[must_use]
     pub fn parse(value: &str) -> Option<Self> {
         match value {
@@ -113,7 +113,7 @@ impl AdaptiveDefault {
     }
 
     /// Map the legacy `bool` programmatic surface: `true` == frozen unguarded
-    /// `on`, `false` == `off` (`prism_quant`'s `isinstance(adaptive_default, bool)`
+    /// `on`, `false` == `off` (`pngprism`'s `isinstance(adaptive_default, bool)`
     /// branch).
     #[must_use]
     pub fn from_bool(value: bool) -> Self {
@@ -141,27 +141,27 @@ pub fn adaptive_guard_fires(opaque_count: usize, total: usize) -> bool {
 
 /// Exact-color histogram while distinct colors stay at or below this
 /// limit; above it, a fine preclip (16 levels/channel, alpha
-/// endpoint-isolated) bounds the working set (`prism_quant.EXACT_BIN_LIMIT`).
+/// endpoint-isolated) bounds the working set (`pngprism.EXACT_BIN_LIMIT`).
 const EXACT_BIN_LIMIT: usize = 32768;
 const PRECLIP_LEVELS: i64 = 16;
 
 /// Refinement works on a deterministic stride sample of the sorted bins
 /// when there are more than this many; final remap covers ALL bins
-/// (`prism_quant.REFINE_SAMPLE_CAP`).
+/// (`pngprism.REFINE_SAMPLE_CAP`).
 const REFINE_SAMPLE_CAP: usize = 4096;
 
 /// Sparse factorized init budgets (ch19 A2): the RGB rep count is
 /// ceil(colors / zoned alpha levels), floored at RGB_REP_MAX
-/// (`prism_quant.RGB_REP_MAX` etc.).
+/// (`pngprism.RGB_REP_MAX` etc.).
 const RGB_REP_MAX: i64 = 32;
 const ALPHA_LADDER_INTERIOR_MAX: i64 = 8;
 const RGB_FIT_ITERS: usize = 4;
 const ALPHA_LADDER_MAX_ITERS: usize = 32;
 
-/// Joint refinement convergence bound (`prism_quant.REFINE_MAX_ITERS`).
+/// Joint refinement convergence bound (`pngprism.REFINE_MAX_ITERS`).
 const REFINE_MAX_ITERS: usize = 8;
 
-/// Hidden-RGB policy hook values (`prism_quant.HIDDEN_RGB_POLICIES`).
+/// Hidden-RGB policy hook values (`pngprism.HIDDEN_RGB_POLICIES`).
 pub const HIDDEN_RGB_POLICIES: [&str; 2] = ["canonicalize-black", "preserve-mean"];
 pub const DEFAULT_HIDDEN_RGB_POLICY: &str = "canonicalize-black";
 
@@ -170,7 +170,7 @@ const ZONE_INTERIOR: u8 = 1;
 const ZONE_OPAQUE: u8 = 2;
 
 /// The declared per-stage observations of one pipeline execution
-/// (`prism_quant.StageNotes`).
+/// (`pngprism.StageNotes`).
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct StageNotes {
     pub sampled_pixels: usize,
@@ -198,7 +198,7 @@ pub struct Summary {
 }
 
 /// One histogram bin: its key plus actual member-pixel sums (never grid
-/// centers). Mirrors `prism_quant._Bin`. Sums are i64: a bin can hold
+/// centers). Mirrors `pngprism._Bin`. Sums are i64: a bin can hold
 /// millions of pixels (count * 255 * 255 < 2^33 at smoke-set sizes, with
 /// vast headroom to 2^63).
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -215,7 +215,7 @@ struct Bin {
     zone: u8,
 }
 
-/// Palette-init seam output (`prism_quant.PaletteInit`).
+/// Palette-init seam output (`pngprism.PaletteInit`).
 #[derive(Debug)]
 struct PaletteInit {
     bins: Vec<Bin>,
@@ -230,14 +230,14 @@ struct PaletteInit {
 }
 
 /// Exact floor(numerator/denominator + 1/2) on nonnegative ints
-/// (`prism_quant._round_half_up`). Rust `/` on nonnegative i64 floors
+/// (`pngprism._round_half_up`). Rust `/` on nonnegative i64 floors
 /// exactly like Python `//`. This is the ONLY rounding in the pipeline.
 fn round_half_up(numerator: i64, denominator: i64) -> i64 {
     debug_assert!(numerator >= 0 && denominator > 0);
     (2 * numerator + denominator) / (2 * denominator)
 }
 
-/// `prism_quant._zone_of`.
+/// `pngprism._zone_of`.
 fn zone_of(alpha: i64) -> u8 {
     if alpha == 0 {
         return ZONE_TRANSPARENT;
@@ -248,7 +248,7 @@ fn zone_of(alpha: i64) -> u8 {
     ZONE_INTERIOR
 }
 
-/// Endpoint-isolating alpha bin (`prism_quant._alpha_bin`): a==0 -> 0,
+/// Endpoint-isolating alpha bin (`pngprism._alpha_bin`): a==0 -> 0,
 /// a==255 -> levels-1, interior values spread over 1..levels-2.
 fn alpha_bin(alpha: u8, levels: i64) -> u8 {
     if alpha == 0 {
@@ -260,7 +260,7 @@ fn alpha_bin(alpha: u8, levels: i64) -> u8 {
     (1 + (i64::from(alpha) - 1) * (levels - 2) / 254) as u8
 }
 
-/// `prism_quant._pack_rgba` (deterministic total order for tie-breaks).
+/// `pngprism._pack_rgba` (deterministic total order for tie-breaks).
 fn pack_rgba(value: Rgba) -> u32 {
     (u32::from(value.0) << 24)
         | (u32::from(value.1) << 16)
@@ -269,7 +269,7 @@ fn pack_rgba(value: Rgba) -> u32 {
 }
 
 /// Declared alpha-aware distance: squared Euclidean over premultiplied
-/// RGBA on the 65025 scale (`prism_quant.premultiplied_distance_sq`).
+/// RGBA on the 65025 scale (`pngprism.premultiplied_distance_sq`).
 /// Max value 4 * 65025^2 < 2^34 — i64 throughout.
 pub fn premultiplied_distance_sq(p: Rgba, q: Rgba) -> i64 {
     let dr = i64::from(p.3) * i64::from(p.0) - i64::from(q.3) * i64::from(q.0);
@@ -889,7 +889,7 @@ fn bins_from_state(state: HistogramState) -> (Vec<Bin>, bool) {
     (bins, state.exact)
 }
 
-/// Histogram pass (`prism_quant._build_bins`). Exact distinct colors while
+/// Histogram pass (`pngprism._build_bins`). Exact distinct colors while
 /// they fit EXACT_BIN_LIMIT, else the declared fine preclip; every bin
 /// carries actual member sums. Returns (bins sorted by key, exact flag).
 /// `BTreeMap` iteration IS the oracle's `sorted(tuple-key)` order.
@@ -913,7 +913,7 @@ fn build_bins_parallel(
     )))
 }
 
-/// The bin's occupancy-weighted representative (`prism_quant._bin_mean_color`).
+/// The bin's occupancy-weighted representative (`pngprism._bin_mean_color`).
 fn bin_mean_color(b: &Bin) -> Rgba {
     // Each mean of u8-valued members rounds to <= 255 by construction.
     (
@@ -924,7 +924,7 @@ fn bin_mean_color(b: &Bin) -> Rgba {
     )
 }
 
-/// The bin's rounded premultiplied mean (`prism_quant._bin_premult_mean`);
+/// The bin's rounded premultiplied mean (`pngprism._bin_premult_mean`);
 /// assignment distance input. Components <= 65025.
 fn bin_premult_mean(b: &Bin) -> [i64; 4] {
     [
@@ -936,7 +936,7 @@ fn bin_premult_mean(b: &Bin) -> [i64; 4] {
 }
 
 /// Occupancy-weighted palette value from member sums
-/// (`prism_quant._centroid`): alpha is the count-weighted mean; RGB
+/// (`pngprism._centroid`): alpha is the count-weighted mean; RGB
 /// un-premultiplies the premultiplied mean by it (sum_ar/sum_a <= 255
 /// always, since per-pixel a*r <= 255*a). a*==0 is the caller's policy case.
 fn centroid(count: i64, sum_a: i64, sum_ar: i64, sum_ag: i64, sum_ab: i64) -> Rgba {
@@ -952,7 +952,7 @@ fn centroid(count: i64, sum_a: i64, sum_ar: i64, sum_ag: i64, sum_ab: i64) -> Rg
     )
 }
 
-/// ch19 A1-lite ladder (`prism_quant._alpha_ladder`): mandatory exact locks
+/// ch19 A1-lite ladder (`pngprism._alpha_ladder`): mandatory exact locks
 /// {0, 255} where present, plus interior levels from weighted 1-D Lloyd
 /// over the 256 alpha buckets, seeded at weighted quantiles.
 fn alpha_ladder(bins: &[Bin]) -> Vec<i64> {
@@ -1028,7 +1028,7 @@ fn alpha_ladder(bins: &[Bin]) -> Vec<i64> {
 }
 
 /// Deterministic stride sample of the sorted bins
-/// (`prism_quant._refine_sample`); final remap always covers ALL bins.
+/// (`pngprism._refine_sample`); final remap always covers ALL bins.
 fn refine_sample(bins: &[Bin]) -> Vec<&Bin> {
     if bins.len() <= REFINE_SAMPLE_CAP {
         return bins.iter().collect();
@@ -1038,7 +1038,7 @@ fn refine_sample(bins: &[Bin]) -> Vec<&Bin> {
 }
 
 /// Alpha-mass-weighted RGB representatives over the refinement sample
-/// (`prism_quant._fit_rgb_reps`): deterministic farthest-point seeding
+/// (`pngprism._fit_rgb_reps`): deterministic farthest-point seeding
 /// (Gonzalez 1985) plus weighted Lloyd polish. Weight is the bin's total
 /// alpha mass sum_a, so fully-transparent pixels never claim palette
 /// capacity for hidden RGB.
@@ -1144,7 +1144,7 @@ fn fit_rgb_reps(sample: &[&Bin], cap: i64, zoned_levels: i64) -> Vec<(u8, u8, u8
 }
 
 /// Fill unused palette capacity with deterministic, zone-safe residual
-/// seeds (`prism_quant._fill_palette_by_weighted_residual`). The sparse
+/// seeds (`pngprism._fill_palette_by_weighted_residual`). The sparse
 /// factorized initializer's existing entries stay in place; each appended
 /// entry is the first refinement-sample bin minimizing the oracle's
 /// `(-count * nearest_d2, packed_mean, zone)` key.
@@ -1221,13 +1221,13 @@ fn fill_palette_by_weighted_residual(bins: &[Bin], palette: &[Rgba], colors: i64
     result
 }
 
-/// v0.1 sampling seam (`prism_quant.stage_sample`): identity — every
+/// v0.1 sampling seam (`pngprism.stage_sample`): identity — every
 /// pixel participates.
 fn stage_sample(pixels: &[Rgba]) -> &[Rgba] {
     pixels
 }
 
-/// v0.1 palette-initialization seam (`prism_quant.stage_palette_init`):
+/// v0.1 palette-initialization seam (`pngprism.stage_palette_init`):
 /// sparse factorized RGB/alpha init (ch19 §5 contract A2). All values
 /// occupancy-weighted (never grid centers).
 fn stage_palette_init(
@@ -1449,7 +1449,7 @@ fn stage_palette_init_with_parallelism(
     })
 }
 
-/// `prism_quant._entry_premult`.
+/// `pngprism._entry_premult`.
 fn entry_premult(entry: Rgba) -> [i64; 4] {
     [
         i64::from(entry.3) * i64::from(entry.0),
@@ -1461,7 +1461,7 @@ fn entry_premult(entry: Rgba) -> [i64; 4] {
 
 /// Nearest palette index in premultiplied space, restricted to the bin's
 /// alpha zone (BINDING); ties -> lowest index
-/// (`prism_quant._nearest_entry`). One-directional capacity degradation:
+/// (`pngprism._nearest_entry`). One-directional capacity degradation:
 /// a zone with no entry falls back to the nearest non-transparent entry
 /// (the a==0 entry only when it is the ONLY entry).
 fn nearest_entry(
@@ -1505,7 +1505,7 @@ fn nearest_entry(
     fallback.ok_or_else(|| Error::internal("internal: empty palette".to_string()))
 }
 
-/// v0.1 refinement seam (`prism_quant.stage_refinement`): k-means-style
+/// v0.1 refinement seam (`pngprism.stage_refinement`): k-means-style
 /// joint Lloyd in premultiplied space over the deterministic sample;
 /// occupancy-weighted centroid updates; zone-constrained assignment;
 /// fixed-point stop or REFINE_MAX_ITERS; empty entries re-seed to the
@@ -1721,7 +1721,7 @@ fn stage_refinement_with_parallelism(
     Ok((palette, iterations))
 }
 
-/// v0.1 remapping seam (`prism_quant.stage_remap`): EVERY histogram bin
+/// v0.1 remapping seam (`pngprism.stage_remap`): EVERY histogram bin
 /// (including any pair left uninstantiated — the A2 nearest-repair rule)
 /// maps to its nearest entry within its alpha zone; pixels map through
 /// their bin key.
@@ -1809,7 +1809,7 @@ fn stage_remap_with_parallelism(
     Ok(indices)
 }
 
-/// v0.1 emission seam (`prism_quant.stage_emit`): deterministic indexed
+/// v0.1 emission seam (`pngprism.stage_emit`): deterministic indexed
 /// PNG (tRNS when needed). The oracle lets a writer error escape
 /// uncaught (unreachable for a pipeline-produced palette); this port
 /// surfaces it as an internal error instead — also unreachable.
@@ -1819,7 +1819,7 @@ fn stage_emit(width: u32, height: u32, palette: &[Rgba], indices: &[u8]) -> Resu
 }
 
 /// Run the unchanged v0.1 core through its palette and remap seams
-/// (`prism_quant.quantize_candidate`): returns (palette, per-pixel index map,
+/// (`pngprism.quantize_candidate`): returns (palette, per-pixel index map,
 /// stage notes). Indices fit `u8` (palette entries <= 256).
 ///
 /// `quantize_png` already validates `colors` against `1..=MAX_COLORS` before
@@ -1837,7 +1837,7 @@ pub fn quantize_candidate(
 }
 
 /// Run the quantizer with an explicit assignment/refinement/remap color
-/// space (`prism_quant.quantize_candidate(..., color_space=...)`).
+/// space (`pngprism.quantize_candidate(..., color_space=...)`).
 pub fn quantize_candidate_with_color_space(
     source: &DecodedImage,
     colors: i64,
@@ -1912,7 +1912,7 @@ pub fn quantize_candidate_with_parallelism(
 }
 
 /// Run the v0.1 pipeline (core + emit) over one decoded image
-/// (`prism_quant.quantize_image`): returns (output PNG bytes, palette, notes).
+/// (`pngprism.quantize_image`): returns (output PNG bytes, palette, notes).
 pub fn quantize_image(
     source: &DecodedImage,
     colors: i64,
@@ -1935,7 +1935,7 @@ pub fn quantize_image_with_color_space(
 }
 
 /// Decode, run the v0.1 core, opt into dither/pack, self-verify, and write
-/// (`prism_quant.quantize_png`). Validation order mirrors the oracle: colors
+/// (`pngprism.quantize_png`). Validation order mirrors the oracle: colors
 /// range, policy, dither-policy, pack, pack-search, strength, composition
 /// guards (all data_error / exit 3 when reached here; `main` catches the
 /// composition/vocabulary cases first as usage errors), then read (io_error),
@@ -2221,7 +2221,7 @@ fn quantize_png_with_parallelism_impl(
             PACK_SEARCHES.join(", ")
         )));
     }
-    // E-0036/E-0040 pack-seam composition (`prism_quant.quantize_png`):
+    // E-0036/E-0040 pack-seam composition (`pngprism.quantize_png`):
     //   * `--pack fast|max` + any seam explicitly ON -> usage error (the
     //     packer runs its own byte search).
     //   * `--pack none`, no seam flag named -> adopted omission defaults

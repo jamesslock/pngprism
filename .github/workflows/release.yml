@@ -1,0 +1,141 @@
+name: Release
+
+# Tagging IS releasing. Pushing a `v*` tag publishes to crates.io and attaches
+# prebuilt CLI binaries to a GitHub Release.
+#
+# Two deliberate safety properties:
+#
+#   1. The full test suite runs again here, on both platforms, before anything
+#      is published. CI having passed on the commit is not taken on trust — a
+#      tag can point at any commit, including one that never ran CI.
+#   2. `cargo publish` is irreversible: a version can be yanked but never
+#      deleted, and the name is permanent. So the publish job runs LAST, only
+#      after the tests and the binary builds have all succeeded.
+#
+# Requires a `CARGO_REGISTRY_TOKEN` repository secret. Without it the publish
+# job fails and the GitHub Release still happens — which is the right way
+# round, since the release is recoverable and the publish is not.
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  verify:
+    name: verify the tag (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: true
+      matrix:
+        os: [macos-latest, ubuntu-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Install zopflipng (so --pack max is exercised)
+        run: |
+          if [ "$RUNNER_OS" = "macOS" ]; then
+            brew install zopfli
+          else
+            sudo apt-get update && sudo apt-get install -y zopfli
+          fi
+
+      - name: The tag must match the version in Cargo.toml
+        shell: bash
+        run: |
+          manifest="$(sed -n 's/^version = "\(.*\)"/\1/p' Cargo.toml | head -1)"
+          tag="${GITHUB_REF_NAME#v}"
+          echo "Cargo.toml: $manifest / tag: $tag"
+          [ "$manifest" = "$tag" ] || {
+            echo "::error::tag $GITHUB_REF_NAME does not match Cargo.toml version $manifest"
+            exit 1
+          }
+
+      - name: The CHANGELOG must have an entry for this version
+        shell: bash
+        run: grep -q "^## ${GITHUB_REF_NAME#v}" CHANGELOG.md || {
+          echo "::error::no CHANGELOG.md section for ${GITHUB_REF_NAME#v}"; exit 1; }
+
+      - run: cargo test --locked --all-targets
+      - run: cargo test --locked --release
+      - run: cargo clippy --locked --all-targets -- -D warnings
+      - run: cargo package --locked
+
+  binaries:
+    name: build ${{ matrix.target }}
+    needs: verify
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: macos-latest,  target: aarch64-apple-darwin }
+          - { os: macos-latest,  target: x86_64-apple-darwin }
+          - { os: ubuntu-latest, target: x86_64-unknown-linux-gnu }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+      - uses: Swatinem/rust-cache@v2
+
+      - run: cargo build --locked --release --target ${{ matrix.target }} --bin pngprism
+
+      # THIRD-PARTY-NOTICES.md must ship with any binary distribution — the
+      # vendored zlib is statically linked into these artifacts.
+      - name: Package the archive
+        shell: bash
+        run: |
+          name="pngprism-${GITHUB_REF_NAME}-${{ matrix.target }}"
+          mkdir "$name"
+          cp target/${{ matrix.target }}/release/pngprism "$name/"
+          cp README.md LICENSE-MIT LICENSE-APACHE THIRD-PARTY-NOTICES.md "$name/"
+          tar -czf "$name.tar.gz" "$name"
+          shasum -a 256 "$name.tar.gz" > "$name.tar.gz.sha256"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.target }}
+          path: |
+            pngprism-*.tar.gz
+            pngprism-*.tar.gz.sha256
+
+  release:
+    name: GitHub Release
+    needs: binaries
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with: { path: dist, merge-multiple: true }
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*
+          generate_release_notes: true
+          body: |
+            Binaries are built from this tag and include the license and
+            third-party notice files. Verify with the accompanying
+            `.sha256` file.
+
+            See `CHANGELOG.md` for what changed. Note that this crate treats
+            **output bytes as part of its contract**: any change to the bytes
+            produced for an existing flag combination is breaking, and is
+            called out under "Changed (output bytes)".
+
+  publish:
+    name: publish to crates.io
+    needs: [verify, binaries]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo publish --locked
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}

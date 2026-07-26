@@ -1,6 +1,6 @@
 //! Line-protocol driver for the pack zlib FFI differential gate.
 
-use prism_quant::pack::zlib_ffi_harness::{self, Deflater};
+use pngprism::pack::zlib_ffi_harness::{self, Deflater};
 use std::error::Error;
 use std::io::{self, BufRead};
 

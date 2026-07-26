@@ -49,7 +49,7 @@ fn normal_source() -> PathBuf {
         );
     let bytes = std::fs::read(&path).unwrap_or_else(|err| panic!("read {}: {err}", path.display()));
     assert_eq!(
-        prism_quant::sha256::hex(&bytes),
+        pngprism::sha256::hex(&bytes),
         GOLDEN_FIRST_UNIT_SHA256,
         "{} is not the pinned golden first unit",
         path.display()

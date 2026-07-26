@@ -25,10 +25,10 @@
 //! Run: `cargo bench` from the crate root.
 
 use criterion::{Criterion, criterion_group, criterion_main};
-use prism_quant::dither::{floyd_steinberg, stub_directives};
-use prism_quant::pack::pack_indexed_png;
-use prism_quant::png::{DecodedImage, decode_png};
-use prism_quant::quant::quantize_candidate;
+use pngprism::dither::{floyd_steinberg, stub_directives};
+use pngprism::pack::pack_indexed_png;
+use pngprism::png::{DecodedImage, decode_png};
+use pngprism::quant::quantize_candidate;
 use std::hint::black_box;
 use std::path::PathBuf;
 

@@ -12,7 +12,7 @@
 //! ORACLE (vendored at `tests/oracle/`); the port's determinism
 //! rules. Method provenance is inherited from the oracle ledger.
 //!
-//! The integrated `prism_quant` CLI consumes only the produced INDEX map
+//! The integrated `pngprism` CLI consumes only the produced INDEX map
 //! (`floyd_steinberg` / `nearest_remap`) and the policy hooks; the oracle's
 //! evidence dataclasses are not part of any emitted artifact and are not
 //! reconstructed here.

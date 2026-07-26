@@ -77,7 +77,7 @@ fn vendored_copies_match_their_manifest_digests() {
         let bytes =
             std::fs::read(&path).unwrap_or_else(|err| panic!("read {}: {err}", path.display()));
         assert_eq!(
-            prism_quant::sha256::hex(&bytes),
+            pngprism::sha256::hex(&bytes),
             row.sha256,
             "{}: the vendored copy drifted from its smoke_manifest.tsv pin",
             row.id
@@ -104,7 +104,7 @@ fn in_tree_originals_match_the_same_digests() {
         let bytes = std::fs::read(&path)
             .unwrap_or_else(|err| panic!("{}: read {}: {err}", row.id, path.display()));
         assert_eq!(
-            prism_quant::sha256::hex(&bytes),
+            pngprism::sha256::hex(&bytes),
             row.sha256,
             "{}: the in-tree corpus file drifted from its smoke_manifest.tsv pin",
             row.id

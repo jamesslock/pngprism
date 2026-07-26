@@ -15,18 +15,37 @@ rust-version = "1.87"
 # never linked or distributed. THIRD-PARTY-NOTICES.md carries the union of
 # third-party texts and must ship with any binary distribution.
 license = "MIT OR Apache-2.0"
-# Kept false: crates.io registration is a separate decision from the license
-# (the license field is valid and useful regardless).
-publish = false
-description = "pngprism 0.5.0: Rust port of a reviewed Python reference (vendored at tests/oracle/prism_quant.py and pinned by digest). Metric-validated PNG quantizer; dual-implementation parity-pinned. No human-acceptability claim."
+description = "Deterministic PNG palette quantizer, ditherer and lossless indexed-PNG packer. Bit-reproducible output; verified lossless."
+repository = "https://github.com/jamesslock/pngprism"
+homepage = "https://github.com/jamesslock/pngprism"
+readme = "README.md"
+keywords = ["png", "quantization", "compression", "image", "palette"]
+categories = ["compression", "multimedia::images", "command-line-utilities"]
+# `cargo package` ships 337 files / 647 KiB compressed. The heavy directories
+# (fuzz corpus, benches) are excluded by Cargo's own rules or below; the test
+# corpora ARE included deliberately, so `cargo test` works from a published
+# tarball rather than only from a git checkout.
+exclude = [
+    "fuzz/",
+    ".github/",
+    # Lab-side files that exist only in the internal research checkout. The
+    # assembled public repository does not contain them at all — but Cargo.toml
+    # travels with the crate, so excluding them here means `cargo publish` is
+    # safe from EITHER tree rather than relying on which directory someone
+    # happened to run it in.
+    "parity/",
+    "reviews/",
+    "DESIGN-DIRECTIONS.md",
+    "LICENSE-RECOMMENDATION.md",
+    "PORT-PLAN.md",
+]
 
 [features]
 zlib-ffi-harness = []
 
 [lints.clippy]
-# The port's integer-width discipline is proven BY HAND at every site
-# (PORT-PLAN.md §6/§P2.5 determinism rules): every narrowing or sign-
-# changing cast carries a range-proof comment naming the oracle invariant
+# The port's integer-width discipline is proven BY HAND at every site:
+# every narrowing or sign-changing cast carries a range-proof comment naming the oracle invariant
 # (a bin count, an alpha channel, a palette index, ...) that makes it safe
 # for in-domain inputs, in the same spirit as the crate's ch17 §31
 # no-panic-on-the-data-path discipline. These three `pedantic` lints fire
@@ -66,14 +85,14 @@ libz-sys = { version = "=1.1.20", default-features = false, features = ["libc", 
 # null-hypothesis/spike gate; see this crate's REFERENCES.md).
 criterion = "=0.8.2"
 
-# Library target name pinned to `prism_quant` (NOT the package name `pngprism`):
-# it is the `use prism_quant::…` import path — the crate's internal code-module
-# identity, the Rust analogue of the Python module filename `prism_quant.py`,
-# which the pngprism rename (T-0213) keeps as "the lab's name". Pinning it here
-# keeps every in-crate import stable while the PRODUCT identity (package,
-# binary, CLI strings) is `pngprism`.
+# One name everywhere: package, library, binary and CLI strings are all
+# `pngprism`, so `cargo add pngprism` is followed by `use pngprism::…`. The
+# library was called `prism_quant` while the crate was internal, mirroring the
+# Python reference module it was ported from; that mirror cost every future user
+# a moment of confusion, so it was renamed before the first publish — after
+# publication it would have been a breaking change for every dependent.
 [lib]
-name = "prism_quant"
+name = "pngprism"
 path = "src/lib.rs"
 
 [[bin]]

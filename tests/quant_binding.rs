@@ -6,8 +6,8 @@
 //! policy hooks, degenerate-cap one-directional degradation, the
 //! convergence bound, and the declared distance properties.
 
-use prism_quant::png::{self, DecodedImage, Properties};
-use prism_quant::{
+use pngprism::png::{self, DecodedImage, Properties};
+use pngprism::{
     DEFAULT_HIDDEN_RGB_POLICY, HIDDEN_RGB_POLICIES, Rgba, premultiplied_distance_sq, quantize_image,
 };
 use std::path::Path;

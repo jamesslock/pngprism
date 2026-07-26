@@ -1,5 +1,5 @@
 //! ch17 §31 no-panic adversarial suite (T-0110): every function on
-//! `prism_quant`'s public API surface (`png`, `quant`, `dither`, `pack`) must
+//! `pngprism`'s public API surface (`png`, `quant`, `dither`, `pack`) must
 //! resolve malformed or adversarial caller-supplied data to a typed `Err` —
 //! NEVER a panic, abort, or silently-wrong success. This is the enforcement
 //! test for the contract recorded in `book/17-prism-engine-architecture.md`
@@ -24,10 +24,10 @@
 //! the sweep early — the assertion at the end of each test reports every
 //! offender found in one failure, not just the first.
 
-use prism_quant::dither::{self, RegionDirective, RegionId};
-use prism_quant::pack;
-use prism_quant::png::{DecodedImage, Properties, decode_png, write_indexed_png};
-use prism_quant::quant::{self, MAX_COLORS};
+use pngprism::dither::{self, RegionDirective, RegionId};
+use pngprism::pack;
+use pngprism::png::{DecodedImage, Properties, decode_png, write_indexed_png};
+use pngprism::quant::{self, MAX_COLORS};
 use std::panic::{self, AssertUnwindSafe};
 use std::path::{Path, PathBuf};
 
