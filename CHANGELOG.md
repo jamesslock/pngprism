@@ -25,7 +25,11 @@ than its author.
 
 ## Unreleased
 
-Nothing yet.
+### Added
+
+- `SECURITY.md` — how to report a vulnerability privately, what is in scope,
+  and which versions are supported. It ships in the crate tarball, so it
+  reaches crates.io with this release rather than only being visible on GitHub.
 
 ## 0.5.0 — first public release
 
