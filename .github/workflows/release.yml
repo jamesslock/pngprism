@@ -107,7 +107,29 @@ jobs:
           targets: ${{ matrix.target }}
       - uses: Swatinem/rust-cache@v2
 
+      # `rust-toolchain.toml` pins 1.96.1, so cargo runs under THAT toolchain,
+      # not the `stable` the action installed — and the action added the target
+      # to stable. Adding it here installs it into whichever toolchain is
+      # actually active. Without this, only the host target builds, which is why
+      # aarch64 passed and the x86_64 cross failed with "can't find crate for
+      # `core`".
+      - run: rustup target add ${{ matrix.target }}
+
       - run: cargo build --locked --release --target ${{ matrix.target }} --bin pngprism
+
+      # A cross-built binary that cannot run is not a release artifact. Check
+      # the architecture is what the target claims; the aarch64 and native
+      # Linux builds additionally get a real smoke run.
+      - name: Verify the artifact
+        shell: bash
+        run: |
+          bin="target/${{ matrix.target }}/release/pngprism"
+          file "$bin"
+          case "${{ matrix.target }}" in
+            x86_64-apple-darwin)  file "$bin" | grep -q "x86_64" ;;
+            aarch64-apple-darwin) file "$bin" | grep -q "arm64" && "$bin" --version ;;
+            *linux*)              file "$bin" | grep -q "x86-64" && "$bin" --version ;;
+          esac
 
       # THIRD-PARTY-NOTICES.md must ship with any binary distribution — the
       # vendored zlib is statically linked into these artifacts.
