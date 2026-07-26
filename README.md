@@ -177,12 +177,19 @@ Most of that advantage is the **Oklab space itself**, not the quantizer — in
 isolation Oklab beats sRGB on 23/24. In the default sRGB space, pngprism sits
 at rough parity with pngquant rather than ahead of it. Oklab is opt-in.
 
-**Where it is known to be worse than pngquant, by our own testing:** the
-256-color dice/grain class. Blind human sessions were run twice; both times, no
-pngprism candidate reached pngquant's acceptability, 0/3 even for the strongest
-metric survivors. Metric wins did not transfer to human judgement there. Do not
-read the numbers above as evidence that class is production-quality — by our
-own bar, it is not.
+**The hardest case, stated in full:** the 256-color dice/grain class. Three
+blind human sessions were run on it. The first two **failed** — no pngprism
+candidate reached pngquant's acceptability, 0/3 even for the strongest
+metric survivors, and metric wins plainly did not transfer to human judgement.
+A third session, on a newer dithered candidate, **passed** at parity with the
+pngquant reference.
+
+That third result is **n=1**: one rated unit, and its own analysis labels it
+*"pilot instrument input, not an experimental result."* So the honest position
+is neither of the tidy ones: this class is not established as
+production-quality, and the single positive result is too small to lean on.
+Treat metric wins here with particular suspicion until a properly powered
+session says otherwise.
 
 **Speed.** No current speed claim is published. Earlier measurements exist but
 were taken against older default surfaces, and promoting a stale number to a
