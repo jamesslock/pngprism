@@ -11,6 +11,16 @@ on:
     branches: [main]
   pull_request:
   workflow_dispatch:
+  # A published crate stops being safe when SOMEONE ELSE's advisory lands, not
+  # when this repository changes. Without a clock, `cargo-deny advisories` only
+  # ever runs against a commit someone happened to push, so a new RUSTSEC entry
+  # against an unchanged Cargo.lock would go unnoticed for as long as the crate
+  # sat still — which, for a finished crate, is exactly when it matters most.
+  # The whole suite runs rather than the audit job alone: it costs little and
+  # also catches drift in the pinned toolchain and the actions themselves.
+  schedule:
+    - cron: "17 6 * * 1"   # Mondays, 06:17 UTC (off the hour: the top of the
+                           # hour is heavily contended and jobs get delayed)
 
 env:
   CARGO_TERM_COLOR: always
