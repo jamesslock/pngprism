@@ -25,6 +25,17 @@ than its author.
 
 ## Unreleased
 
+### Changed
+
+- **The CLI now defaults `--threads` to the machine's available cores**, where it
+  previously defaulted to 1. This is a behaviour change in resource usage, not in
+  results: output bytes are unaffected, verified across thread counts. Pass
+  `--threads 1` for the previous behaviour.
+
+  The **library** default is unchanged and remains sequential
+  (`Parallelism::SEQUENTIAL`). A command-line tool is expected to use the machine
+  it was run on; a library must not spawn threads behind its caller's back.
+
 ### Performance
 
 No output bytes change — stated first, because on this crate that is the
