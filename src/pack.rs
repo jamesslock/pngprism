@@ -35,6 +35,7 @@
 //!
 //! **Label: 0.5.0, unproven, metric-validated only.**
 
+use crate::parallel::Parallelism;
 use crate::png::{self, PNG_SIGNATURE};
 use crate::{Error, Rgba};
 use flate2::Compression;
@@ -1272,6 +1273,7 @@ fn local_position_moves(palette: &[Rgba]) -> Vec<Vec<usize>> {
 
 /// Run the fixed-budget ch19 A5 pre-optimizer search (`prism_pack._build_v2_variants`).
 fn build_v2_variants(
+    parallelism: Parallelism,
     width: usize,
     height: usize,
     palette: &[Rgba],
@@ -1285,25 +1287,34 @@ fn build_v2_variants(
     // groups are appended to `variants` in the same `V2_ORDER_STRATEGIES`
     // order as the previous sequential loop, so generation-index tie-breaks
     // (`min_variant_index`) are unaffected — only wall-clock time changes.
+    // Bounded by the caller's configured worker count, not by the number of
+    // strategies: `--threads 1` must mean one thread everywhere, including
+    // here. `shard_ranges` clamps to 1..=len, so a sequential Parallelism
+    // yields exactly one shard and the whole loop runs inline.
+    let shards = crate::parallel::shard_ranges(V2_ORDER_STRATEGIES.len(), parallelism.threads());
     let per_order_groups: Vec<Result<Vec<Variant>, Error>> = std::thread::scope(|scope| {
-        let handles: Vec<_> = V2_ORDER_STRATEGIES
-            .iter()
-            .map(|&order_strategy| {
+        let handles: Vec<_> = shards
+            .into_iter()
+            .map(|range| {
                 scope.spawn(move || -> Result<Vec<Variant>, Error> {
-                    let (ordered_palette, ordered_indices) =
-                        permute_palette(palette, indices, width, height, order_strategy)?;
-                    let mut group = Vec::with_capacity(V2_FILTER_STRATEGIES.len());
-                    for filter_strategy in V2_FILTER_STRATEGIES {
-                        group.push(encode_variant(
-                            width,
-                            height,
-                            &ordered_palette,
-                            &ordered_indices,
-                            None,
-                            filter_strategy,
-                        )?);
+                    let mut shard_out: Vec<Variant> = Vec::new();
+                    for &order_strategy in &V2_ORDER_STRATEGIES[range] {
+                        let (ordered_palette, ordered_indices) =
+                            permute_palette(palette, indices, width, height, order_strategy)?;
+                        let mut group = Vec::with_capacity(V2_FILTER_STRATEGIES.len());
+                        for filter_strategy in V2_FILTER_STRATEGIES {
+                            group.push(encode_variant(
+                                width,
+                                height,
+                                &ordered_palette,
+                                &ordered_indices,
+                                None,
+                                filter_strategy,
+                            )?);
+                        }
+                        shard_out.extend(group);
                     }
-                    Ok(group)
+                    Ok(shard_out)
                 })
             })
             .collect();
@@ -1702,6 +1713,42 @@ pub fn pack_indexed_png(
     mode: &str,
     search_version: &str,
 ) -> Result<Vec<u8>, Error> {
+    pack_indexed_png_with_parallelism(
+        width,
+        height,
+        palette,
+        indices,
+        mode,
+        search_version,
+        Parallelism::SEQUENTIAL,
+    )
+}
+
+/// [`pack_indexed_png`] with an explicit worker count.
+///
+/// The packing search runs provably independent work — the v2 order strategies
+/// and the max-mode `zopflipng` finalists — which can be scheduled across
+/// threads without changing a single output byte. Which bytes are produced and
+/// selected is unaffected: results are reassembled in generation order before
+/// any tie-break sees them.
+///
+/// [`pack_indexed_png`] stays sequential, matching
+/// [`quantize_candidate`](crate::quant::quantize_candidate) and the rest of this
+/// crate's convention that the plain entry point does not spawn threads behind
+/// a caller's back.
+///
+/// # Errors
+///
+/// As [`pack_indexed_png`].
+pub fn pack_indexed_png_with_parallelism(
+    width: usize,
+    height: usize,
+    palette: &[Rgba],
+    indices: &[usize],
+    mode: &str,
+    search_version: &str,
+    parallelism: Parallelism,
+) -> Result<Vec<u8>, Error> {
     normalize_inputs(width, height, palette, indices)?;
     let (clean_palette, clean_indices) = cleanup_palette(palette, indices)?;
     // Cleanup must preserve decoded pixels.
@@ -1746,7 +1793,7 @@ pub fn pack_indexed_png(
         }
         v
     } else {
-        build_v2_variants(width, height, &clean_palette, &clean_indices)?
+        build_v2_variants(parallelism, width, height, &clean_palette, &clean_indices)?
     };
 
     let selected = min_variant_index(&variants);
@@ -1796,20 +1843,34 @@ pub fn pack_indexed_png(
         // deterministic `(optimized len, finalist index)` tie-break below is
         // untouched — it only changes wall-clock time when there is more than
         // one finalist and spare CPU to run them on.
+        // Bounded by the caller's worker count. `--threads 1` must run the
+        // finalists one after another, as it did before this was parallelised;
+        // shard_ranges clamps to 1..=len so a sequential Parallelism produces a
+        // single shard that runs them inline.
+        let shards = crate::parallel::shard_ranges(finalists.len(), parallelism.threads());
         let optimized: Vec<Vec<u8>> = std::thread::scope(|scope| -> Result<Vec<Vec<u8>>, Error> {
-            let handles: Vec<_> = finalists
-                .iter()
-                .map(|&idx| {
-                    let data = &variants[idx].data;
+            let handles: Vec<_> = shards
+                .into_iter()
+                .map(|range| {
+                    let group: Vec<&Vec<u8>> = finalists[range]
+                        .iter()
+                        .map(|&i| &variants[i].data)
+                        .collect();
                     let binary = &binary;
                     let extra = &extra;
-                    scope.spawn(move || run_zopflipng(data, binary, extra))
+                    scope.spawn(move || -> Result<Vec<Vec<u8>>, Error> {
+                        group
+                            .into_iter()
+                            .map(|data| run_zopflipng(data, binary, extra))
+                            .collect()
+                    })
                 })
                 .collect();
-            handles
-                .into_iter()
-                .map(|h| h.join().expect("zopflipng worker thread panicked"))
-                .collect()
+            let mut out: Vec<Vec<u8>> = Vec::with_capacity(finalists.len());
+            for handle in handles {
+                out.extend(handle.join().expect("zopflipng worker thread panicked")?);
+            }
+            Ok(out)
         })?;
         // min by (optimized len, finalist index)
         let mut best = 0usize;
