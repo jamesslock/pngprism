@@ -1,0 +1,388 @@
+{
+  "claim_scope": {
+    "bytes": "deterministic; each cell twin-verified in this run",
+    "quality": "not claimed; no visual-quality assertion is made",
+    "timings": "OBSERVATIONAL \u2014 one machine, sequential runs, median of 5. Not a benchmark and not a throughput claim."
+  },
+  "generated_by": "benchmarks/version-gallery/build_readme_grid.py",
+  "host": "Darwin arm64",
+  "pngprism_version": "pngprism 0.5.0",
+  "pngquant_baseline_note": "baseline revision 2 (2026-07-26, lock committed). NOT the 2026-07-17 revision 1 binary that earlier recorded comparisons used \u2014 see benchmarks/baselines/libimagequant/rebaseline-evidence-2026-07-26.md",
+  "pngquant_baseline_revision": 2,
+  "pngquant_version": "pngquant 4.0.0",
+  "schema": "pngprism.readme-comparison-grid/1",
+  "sources": [
+    {
+      "cells": {
+        "pngprism-default": {
+          "argv": [
+            "/Users/james/code/pngprism/target/release/pngprism",
+            "IN",
+            "OUT",
+            "--colors",
+            "256"
+          ],
+          "bytes": 916,
+          "note": "stock defaults; --colors 256 is the default made explicit",
+          "observed_seconds_max": 0.0057,
+          "observed_seconds_median": 0.0056,
+          "observed_seconds_min": 0.0053,
+          "sha256": "05b874e93907b53ddd273365d28885b1b178f6c1dd6614a924fed06a43fd8406",
+          "timing_runs": 5
+        },
+        "pngprism-max": {
+          "argv": [
+            "/Users/james/code/pngprism/target/release/pngprism",
+            "IN",
+            "OUT",
+            "--colors",
+            "256",
+            "--pack",
+            "max",
+            "--pack-search",
+            "v2"
+          ],
+          "bytes": 638,
+          "note": "opt-in packing search; dither policy left at the shipped default so the only difference from the default column is effort",
+          "observed_seconds_max": 1.8112,
+          "observed_seconds_median": 1.7816,
+          "observed_seconds_min": 1.7585,
+          "sha256": "3c9b3cb57deee122b1415ad631cbe0cdb434543d252ddf23cfb27ecbb850efed",
+          "timing_runs": 5
+        },
+        "pngquant-default": {
+          "argv": [
+            "/Users/james/code/pngprism-lab/benchmarks/baselines/libimagequant/work-a/pngquant/target/release/pngquant",
+            "--force",
+            "--speed",
+            "3",
+            "--output",
+            "OUT",
+            "IN"
+          ],
+          "bytes": 924,
+          "note": "speed 3 is pngquant's own default",
+          "observed_seconds_max": 0.0061,
+          "observed_seconds_median": 0.0058,
+          "observed_seconds_min": 0.0049,
+          "sha256": "693c46cff6272a3fe6e99930161112665b952c5d56d70dfcb72a11303217b7d0",
+          "timing_runs": 5
+        },
+        "pngquant-max": {
+          "argv": [
+            "/Users/james/code/pngprism-lab/benchmarks/baselines/libimagequant/work-a/pngquant/target/release/pngquant",
+            "--force",
+            "--speed",
+            "1",
+            "--output",
+            "OUT",
+            "IN"
+          ],
+          "bytes": 638,
+          "note": "speed 1 plus a lossless zopflipng -m post-pass \u2014 the same best-effort arm the README's corpus figures use",
+          "observed_seconds_max": 0.6312,
+          "observed_seconds_median": 0.5949,
+          "observed_seconds_min": 0.5939,
+          "post": [
+            "/Users/james/code/pngprism-lab/benchmarks/baselines/zopfli/work/zopfli/zopflipng",
+            "-m",
+            "-y"
+          ],
+          "sha256": "b806b9a97b8e1d9ebd7c768210e18f283b89257edc47ed99cc9803dbe7973a3b",
+          "timing_runs": 5
+        }
+      },
+      "credit": "Project Prism synthetic corpus (own work)",
+      "exercises": "radial hue ramp over an alpha ramp \u2014 banding and dither",
+      "id": "synthetic-hue-ramp",
+      "license": "CC0-1.0",
+      "original": {
+        "bytes": 16545,
+        "sha256": "38dd79fbc9eb5b91abfa17a5d78eeaf02954fbfbe978ba4935c9bee024b99cfc"
+      },
+      "recorded_path": "benchmarks/synthetic-corpus/corpus/alpha-ramp-hue-radial-64/source.png"
+    },
+    {
+      "cells": {
+        "pngprism-default": {
+          "argv": [
+            "/Users/james/code/pngprism/target/release/pngprism",
+            "IN",
+            "OUT",
+            "--colors",
+            "256"
+          ],
+          "bytes": 2655,
+          "note": "stock defaults; --colors 256 is the default made explicit",
+          "observed_seconds_max": 0.1132,
+          "observed_seconds_median": 0.1037,
+          "observed_seconds_min": 0.1007,
+          "sha256": "84a305bbc0d674e6906213f20302a053ef701b958d73d209cdb159f9854d893f",
+          "timing_runs": 5
+        },
+        "pngprism-max": {
+          "argv": [
+            "/Users/james/code/pngprism/target/release/pngprism",
+            "IN",
+            "OUT",
+            "--colors",
+            "256",
+            "--pack",
+            "max",
+            "--pack-search",
+            "v2"
+          ],
+          "bytes": 2031,
+          "note": "opt-in packing search; dither policy left at the shipped default so the only difference from the default column is effort",
+          "observed_seconds_max": 33.2517,
+          "observed_seconds_median": 30.8414,
+          "observed_seconds_min": 30.7021,
+          "sha256": "3370125f43585ba7ea73f1933608d5299eef2d594b5a0c215f9e568f541be28b",
+          "timing_runs": 5
+        },
+        "pngquant-default": {
+          "argv": [
+            "/Users/james/code/pngprism-lab/benchmarks/baselines/libimagequant/work-a/pngquant/target/release/pngquant",
+            "--force",
+            "--speed",
+            "3",
+            "--output",
+            "OUT",
+            "IN"
+          ],
+          "bytes": 3040,
+          "note": "speed 3 is pngquant's own default",
+          "observed_seconds_max": 0.0117,
+          "observed_seconds_median": 0.0116,
+          "observed_seconds_min": 0.0114,
+          "sha256": "69f0ce5e39d2e5bb5c87796429235241a4331c1313f14f283dac5c472ede7829",
+          "timing_runs": 5
+        },
+        "pngquant-max": {
+          "argv": [
+            "/Users/james/code/pngprism-lab/benchmarks/baselines/libimagequant/work-a/pngquant/target/release/pngquant",
+            "--force",
+            "--speed",
+            "1",
+            "--output",
+            "OUT",
+            "IN"
+          ],
+          "bytes": 2039,
+          "note": "speed 1 plus a lossless zopflipng -m post-pass \u2014 the same best-effort arm the README's corpus figures use",
+          "observed_seconds_max": 9.4557,
+          "observed_seconds_median": 8.9766,
+          "observed_seconds_min": 7.7869,
+          "post": [
+            "/Users/james/code/pngprism-lab/benchmarks/baselines/zopfli/work/zopfli/zopflipng",
+            "-m",
+            "-y"
+          ],
+          "sha256": "9266c45735e6ada11f6b8473371017b5ead971578d1e9bc3d436a951c9188895",
+          "timing_runs": 5
+        }
+      },
+      "credit": "Kenney (kenney.nl), CC0",
+      "exercises": "smooth low-alpha falloff \u2014 shadow-tail behaviour",
+      "id": "lightmask-cone",
+      "license": "CC0-1.0",
+      "original": {
+        "bytes": 2964,
+        "sha256": "13b08da2ef43d966949d2d0a0ea74917f1dca89c0e9f6abbc1a522071f10bf8f"
+      },
+      "recorded_path": "datasets/collections/kenney-packs/light-masks/Transparent/cone_a.png"
+    },
+    {
+      "cells": {
+        "pngprism-default": {
+          "argv": [
+            "/Users/james/code/pngprism/target/release/pngprism",
+            "IN",
+            "OUT",
+            "--colors",
+            "256"
+          ],
+          "bytes": 10138,
+          "note": "stock defaults; --colors 256 is the default made explicit",
+          "observed_seconds_max": 0.0774,
+          "observed_seconds_median": 0.073,
+          "observed_seconds_min": 0.072,
+          "sha256": "233fce4487523cd2ad05ab6bf08d2f77450166859f6d5ab7f39038a3bc91c6a4",
+          "timing_runs": 5
+        },
+        "pngprism-max": {
+          "argv": [
+            "/Users/james/code/pngprism/target/release/pngprism",
+            "IN",
+            "OUT",
+            "--colors",
+            "256",
+            "--pack",
+            "max",
+            "--pack-search",
+            "v2"
+          ],
+          "bytes": 9219,
+          "note": "opt-in packing search; dither policy left at the shipped default so the only difference from the default column is effort",
+          "observed_seconds_max": 8.0379,
+          "observed_seconds_median": 7.7219,
+          "observed_seconds_min": 7.5464,
+          "sha256": "7ea1531a5de310d4f42629cfe961104db2755eaf88e84e2744814c1242df9abc",
+          "timing_runs": 5
+        },
+        "pngquant-default": {
+          "argv": [
+            "/Users/james/code/pngprism-lab/benchmarks/baselines/libimagequant/work-a/pngquant/target/release/pngquant",
+            "--force",
+            "--speed",
+            "3",
+            "--output",
+            "OUT",
+            "IN"
+          ],
+          "bytes": 13319,
+          "note": "speed 3 is pngquant's own default",
+          "observed_seconds_max": 0.0176,
+          "observed_seconds_median": 0.0174,
+          "observed_seconds_min": 0.0172,
+          "sha256": "518a0bc8973b62cc147ad3f15eb2cf9ec147c7ecc5a48b3763027de36dd7091e",
+          "timing_runs": 5
+        },
+        "pngquant-max": {
+          "argv": [
+            "/Users/james/code/pngprism-lab/benchmarks/baselines/libimagequant/work-a/pngquant/target/release/pngquant",
+            "--force",
+            "--speed",
+            "1",
+            "--output",
+            "OUT",
+            "IN"
+          ],
+          "bytes": 11878,
+          "note": "speed 1 plus a lossless zopflipng -m post-pass \u2014 the same best-effort arm the README's corpus figures use",
+          "observed_seconds_max": 1.3609,
+          "observed_seconds_median": 1.2812,
+          "observed_seconds_min": 1.261,
+          "post": [
+            "/Users/james/code/pngprism-lab/benchmarks/baselines/zopfli/work/zopfli/zopflipng",
+            "-m",
+            "-y"
+          ],
+          "sha256": "9d0c042859095969a3b1b3f26b8e76bb0ae7971d9357d8f3dbb0b7c66b60c32d",
+          "timing_runs": 5
+        }
+      },
+      "credit": "Poly Haven, CC0",
+      "exercises": "3D render with transparency \u2014 specular and gradient",
+      "id": "wrench-render",
+      "license": "CC0-1.0",
+      "original": {
+        "bytes": 108824,
+        "sha256": "c786eb4818762d27e61b1e4976bd13d8b06b466111c06a4157c365b8594d77cf"
+      },
+      "recorded_path": "datasets/pilot-v0/packages/distributable-D/poly-haven300-adjustable_wrench-1k-rgba.png"
+    },
+    {
+      "cells": {
+        "pngprism-default": {
+          "argv": [
+            "/Users/james/code/pngprism/target/release/pngprism",
+            "IN",
+            "OUT",
+            "--colors",
+            "256"
+          ],
+          "bytes": 63093,
+          "note": "stock defaults; --colors 256 is the default made explicit",
+          "observed_seconds_max": 0.274,
+          "observed_seconds_median": 0.2654,
+          "observed_seconds_min": 0.2631,
+          "sha256": "4f71aa80b9ae49dfe0f2e434491130fb65cdba61c5a8b2284661b578e790b5f1",
+          "timing_runs": 5
+        },
+        "pngprism-max": {
+          "argv": [
+            "/Users/james/code/pngprism/target/release/pngprism",
+            "IN",
+            "OUT",
+            "--colors",
+            "256",
+            "--pack",
+            "max",
+            "--pack-search",
+            "v2"
+          ],
+          "bytes": 59044,
+          "note": "opt-in packing search; dither policy left at the shipped default so the only difference from the default column is effort",
+          "observed_seconds_max": 16.2365,
+          "observed_seconds_median": 16.0603,
+          "observed_seconds_min": 16.0083,
+          "sha256": "431f5568083ae46999a7b15a5cdf61bd5c40a591e6c94a009578234cda35276b",
+          "timing_runs": 5
+        },
+        "pngquant-default": {
+          "argv": [
+            "/Users/james/code/pngprism-lab/benchmarks/baselines/libimagequant/work-a/pngquant/target/release/pngquant",
+            "--force",
+            "--speed",
+            "3",
+            "--output",
+            "OUT",
+            "IN"
+          ],
+          "bytes": 66660,
+          "note": "speed 3 is pngquant's own default",
+          "observed_seconds_max": 0.0458,
+          "observed_seconds_median": 0.0443,
+          "observed_seconds_min": 0.044,
+          "sha256": "7949ab3b4bcff5cea7f001b365f4a10231d45d76c06918b13890eaa0b06f0051",
+          "timing_runs": 5
+        },
+        "pngquant-max": {
+          "argv": [
+            "/Users/james/code/pngprism-lab/benchmarks/baselines/libimagequant/work-a/pngquant/target/release/pngquant",
+            "--force",
+            "--speed",
+            "1",
+            "--output",
+            "OUT",
+            "IN"
+          ],
+          "bytes": 60454,
+          "note": "speed 1 plus a lossless zopflipng -m post-pass \u2014 the same best-effort arm the README's corpus figures use",
+          "observed_seconds_max": 2.5623,
+          "observed_seconds_median": 2.4935,
+          "observed_seconds_min": 2.4858,
+          "post": [
+            "/Users/james/code/pngprism-lab/benchmarks/baselines/zopfli/work/zopfli/zopflipng",
+            "-m",
+            "-y"
+          ],
+          "sha256": "ed1f2cf16c7d680e9d019fd1ec7ecc6b9293f4694086858e167035be09e1d200",
+          "timing_runs": 5
+        }
+      },
+      "credit": "Open Images \u2014 photograph CC BY 2.0, instance mask CC BY 4.0; the combined cutout is subject to both",
+      "exercises": "photographic cutout \u2014 the hardest class",
+      "id": "squirrel-cutout",
+      "license": "CC-BY-2.0 AND CC-BY-4.0",
+      "license_components": [
+        {
+          "license": "CC-BY-2.0",
+          "part": "photograph",
+          "source": "Open Images"
+        },
+        {
+          "license": "CC-BY-4.0",
+          "part": "instance mask",
+          "source": "Open Images"
+        }
+      ],
+      "original": {
+        "bytes": 189155,
+        "sha256": "afea2b78d84ce9034498f21fb86b4f8ca1d547fb4212291282ab8aa5c1664172"
+      },
+      "recorded_path": "datasets/pilot-v0/packages/distributable-D/open-images300-squirrel-0022bffa9abfb554-rgba.png"
+    }
+  ]
+}
