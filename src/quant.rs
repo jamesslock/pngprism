@@ -2391,8 +2391,16 @@ fn quantize_png_with_parallelism_impl(
             stage_emit(source.width, source.height, &palette, &idx_u8)?
         }
     } else {
-        pack::pack_indexed_png(width, height, &palette, &indices, pack_mode, pack_search)
-            .map_err(|err| Error::data(format!("data_error: {}", err)))?
+        pack::pack_indexed_png_with_parallelism(
+            width,
+            height,
+            &palette,
+            &indices,
+            pack_mode,
+            pack_search,
+            parallelism,
+        )
+        .map_err(|err| Error::data(format!("data_error: {}", err)))?
     };
 
     // Self-verification: the emitted bytes must re-decode to the declared
