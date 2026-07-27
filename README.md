@@ -98,7 +98,7 @@ failure stdout is empty and stderr carries a single diagnostic line.
 | `--pack-search` | `v1`, `v2` | — |
 | `--pack-seam-palette-sort` / `--pack-seam-memlevel` / `--pack-seam-reduction` | `off`, `on` | sort/reduction on for `--pack none` |
 | `--hidden-rgb-policy` | policy name | `canonicalize-black` |
-| `--threads` | `1`–`256` | `1` |
+| `--threads` | `1`–`256` | available cores |
 | `--parallel-merge-order` | `balanced`, `forward`, `reverse`, `shuffle:SEED` | `balanced` |
 | `--report` | `json` | — |
 | `--help`, `--version` | — | — |
