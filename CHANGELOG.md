@@ -25,6 +25,22 @@ than its author.
 
 ## Unreleased
 
+### Performance
+
+No output bytes change — stated first, because on this crate that is the
+question a performance entry raises. Byte-identity is verified across thread
+counts and on every reference conversion.
+
+- The `--pack max` zopflipng finalists and the v2 packing search's variant
+  generation now run across threads, bounded by `--threads`. Results are
+  reassembled in generation order before any tie-break sees them.
+- `classify_regions` no longer runs a full linear nearest-distance scan per
+  pixel to answer an exact-match question: 4-20% off a default conversion,
+  depending on the image.
+- New `pack_indexed_png_with_parallelism`. `pack_indexed_png` is unchanged and
+  remains sequential — the plain entry point does not spawn threads behind a
+  caller's back.
+
 ### Added
 
 - `SECURITY.md` — how to report a vulnerability privately, what is in scope,
