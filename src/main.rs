@@ -63,7 +63,7 @@ options:
   --pack-seam-reduction off|on
   --max-pixels N              pixel admission ceiling (>=1; default 67108864 =
                               64 Mi-pixel); overrides up or down, hard bound
-  --threads N                 stage-parallel worker count (1..; Rust-only)
+  --threads N                 worker count (1..; default: available cores)
   --parallel-merge-order balanced|forward|reverse|shuffle:SEED  (Rust-only)
   --report json               emit a machine-readable JSON report on stdout
   --version                   print the version and exit
@@ -338,7 +338,18 @@ fn main() -> ExitCode {
     let mut pack_mode = DEFAULT_PACK_MODE.to_string();
     let mut pack_search = DEFAULT_PACK_SEARCH.to_string();
     let mut pack_search_explicit = false;
-    let mut threads = 1usize;
+    // The CLI defaults to the machine's available parallelism; the LIBRARY
+    // still defaults to sequential (`Parallelism::SEQUENTIAL`). A command-line
+    // tool is expected to use the machine it was run on; a library must not
+    // spawn threads behind its caller's back. Output is unaffected either way —
+    // byte-identity across thread counts is verified in the suite.
+    //
+    // Falls back to 1 when the count is unavailable, and is capped at
+    // MAX_THREADS so an unusually large reported parallelism cannot exceed what
+    // `Parallelism::new` accepts.
+    let mut threads = std::thread::available_parallelism()
+        .map_or(1, std::num::NonZeroUsize::get)
+        .min(pngprism::MAX_THREADS);
     let mut merge_order = MergeOrder::Balanced;
     let mut max_pixels: Option<u64> = None;
     let mut report_json = false;
