@@ -22,6 +22,7 @@
 //!
 //! **Label: 0.5.0, unproven, metric-validated only.**
 
+use std::collections::HashSet;
 use std::sync::OnceLock;
 
 use crate::{Error, Rgba, sha256};
@@ -649,17 +650,34 @@ fn classify_regions(
     let h = height as i64;
 
     // Pass 1: transparent support and palette-exact (protected) pixels.
+    //
+    // Only whether SOME eligible palette entry exactly matches the pixel's
+    // feature vector is needed here (the matched entry's index is discarded
+    // below), so this is a set-membership test rather than a full linear
+    // nearest-distance scan over the (up to 256-entry) eligible list per
+    // pixel. A squared 4D distance of 0 holds iff the two feature vectors are
+    // pointwise equal (a sum of squares is 0 iff every term is 0), so
+    // "exists eligible entry at distance 0" and "feature vector is in the
+    // eligible set" are the same predicate. Same classification result,
+    // O(1)-average membership instead of O(palette size) per pixel.
+    let zone_exact_features: [HashSet<Feature>; 3] = std::array::from_fn(|zone| {
+        eligible[zone]
+            .iter()
+            .map(|&index| palette_features[index])
+            .collect()
+    });
     for position in 0..count {
-        if zones[position] == 0 {
+        let zone = zones[position];
+        if zone == 0 {
             classes[position] = Some(RegionClass::Transparent);
             continue;
         }
-        let (_, distance) = nearest_index_and_distance_sq(
-            features[position],
-            &palette_features,
-            &eligible[zones[position]],
-        )?;
-        if distance == 0 {
+        if eligible[zone].is_empty() {
+            return Err(Error::data(
+                "palette has no entry in the source pixel's alpha zone".to_string(),
+            ));
+        }
+        if zone_exact_features[zone].contains(&features[position]) {
             classes[position] = Some(RegionClass::ProtectedExact);
         }
     }
