@@ -1277,20 +1277,44 @@ fn build_v2_variants(
     palette: &[Rgba],
     indices: &[usize],
 ) -> Result<Vec<Variant>, Error> {
+    // The 9 order strategies are fully independent of one another (each only
+    // reads the shared `palette`/`indices` inputs and produces its own 7
+    // encoded variants), so they can run on separate threads. The RESULT
+    // ordering is preserved exactly: each thread still produces its 7 filter
+    // variants in the same `V2_FILTER_STRATEGIES` order, and the per-strategy
+    // groups are appended to `variants` in the same `V2_ORDER_STRATEGIES`
+    // order as the previous sequential loop, so generation-index tie-breaks
+    // (`min_variant_index`) are unaffected — only wall-clock time changes.
+    let per_order_groups: Vec<Result<Vec<Variant>, Error>> = std::thread::scope(|scope| {
+        let handles: Vec<_> = V2_ORDER_STRATEGIES
+            .iter()
+            .map(|&order_strategy| {
+                scope.spawn(move || -> Result<Vec<Variant>, Error> {
+                    let (ordered_palette, ordered_indices) =
+                        permute_palette(palette, indices, width, height, order_strategy)?;
+                    let mut group = Vec::with_capacity(V2_FILTER_STRATEGIES.len());
+                    for filter_strategy in V2_FILTER_STRATEGIES {
+                        group.push(encode_variant(
+                            width,
+                            height,
+                            &ordered_palette,
+                            &ordered_indices,
+                            None,
+                            filter_strategy,
+                        )?);
+                    }
+                    Ok(group)
+                })
+            })
+            .collect();
+        handles
+            .into_iter()
+            .map(|h| h.join().expect("v2 initial-variant worker thread panicked"))
+            .collect()
+    });
     let mut variants: Vec<Variant> = Vec::new();
-    for order_strategy in V2_ORDER_STRATEGIES {
-        let (ordered_palette, ordered_indices) =
-            permute_palette(palette, indices, width, height, order_strategy)?;
-        for filter_strategy in V2_FILTER_STRATEGIES {
-            variants.push(encode_variant(
-                width,
-                height,
-                &ordered_palette,
-                &ordered_indices,
-                None,
-                filter_strategy,
-            )?);
-        }
+    for group in per_order_groups {
+        variants.extend(group?);
     }
 
     let mut current = min_variant_index(&variants);
