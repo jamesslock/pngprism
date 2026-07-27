@@ -1763,10 +1763,30 @@ pub fn pack_indexed_png(
         } else {
             Vec::new()
         };
-        let mut optimized: Vec<Vec<u8>> = Vec::new();
-        for &idx in &finalists {
-            optimized.push(run_zopflipng(&variants[idx].data, &binary, &extra)?);
-        }
+        // Each finalist's `run_zopflipng` call is an independent subprocess
+        // invocation (its own unique temp dir, via the atomic counter in
+        // `run_zopflipng`) with no shared mutable state, so the finalists can
+        // run concurrently rather than one after another. This does not
+        // change WHICH bytes are produced or selected — `optimized` is
+        // collected back in the same `finalists` order it always was, so the
+        // deterministic `(optimized len, finalist index)` tie-break below is
+        // untouched — it only changes wall-clock time when there is more than
+        // one finalist and spare CPU to run them on.
+        let optimized: Vec<Vec<u8>> = std::thread::scope(|scope| -> Result<Vec<Vec<u8>>, Error> {
+            let handles: Vec<_> = finalists
+                .iter()
+                .map(|&idx| {
+                    let data = &variants[idx].data;
+                    let binary = &binary;
+                    let extra = &extra;
+                    scope.spawn(move || run_zopflipng(data, binary, extra))
+                })
+                .collect();
+            handles
+                .into_iter()
+                .map(|h| h.join().expect("zopflipng worker thread panicked"))
+                .collect()
+        })?;
         // min by (optimized len, finalist index)
         let mut best = 0usize;
         for i in 1..optimized.len() {
