@@ -1292,37 +1292,42 @@ fn build_v2_variants(
     // here. `shard_ranges` clamps to 1..=len, so a sequential Parallelism
     // yields exactly one shard and the whole loop runs inline.
     let shards = crate::parallel::shard_ranges(V2_ORDER_STRATEGIES.len(), parallelism.threads());
-    let per_order_groups: Vec<Result<Vec<Variant>, Error>> = std::thread::scope(|scope| {
-        let handles: Vec<_> = shards
-            .into_iter()
-            .map(|range| {
-                scope.spawn(move || -> Result<Vec<Variant>, Error> {
-                    let mut shard_out: Vec<Variant> = Vec::new();
-                    for &order_strategy in &V2_ORDER_STRATEGIES[range] {
-                        let (ordered_palette, ordered_indices) =
-                            permute_palette(palette, indices, width, height, order_strategy)?;
-                        let mut group = Vec::with_capacity(V2_FILTER_STRATEGIES.len());
-                        for filter_strategy in V2_FILTER_STRATEGIES {
-                            group.push(encode_variant(
-                                width,
-                                height,
-                                &ordered_palette,
-                                &ordered_indices,
-                                None,
-                                filter_strategy,
-                            )?);
-                        }
-                        shard_out.extend(group);
-                    }
-                    Ok(shard_out)
-                })
-            })
-            .collect();
-        handles
-            .into_iter()
-            .map(|h| h.join().expect("v2 initial-variant worker thread panicked"))
-            .collect()
-    });
+    let build_shard = |range: std::ops::Range<usize>| -> Result<Vec<Variant>, Error> {
+        let mut shard_out: Vec<Variant> = Vec::new();
+        for &order_strategy in &V2_ORDER_STRATEGIES[range] {
+            let (ordered_palette, ordered_indices) =
+                permute_palette(palette, indices, width, height, order_strategy)?;
+            for filter_strategy in V2_FILTER_STRATEGIES {
+                shard_out.push(encode_variant(
+                    width,
+                    height,
+                    &ordered_palette,
+                    &ordered_indices,
+                    None,
+                    filter_strategy,
+                )?);
+            }
+        }
+        Ok(shard_out)
+    };
+    // A single shard runs ON THE CALLER'S THREAD. `scope.spawn` for one shard
+    // would still create an OS thread, which contradicts the guarantee that the
+    // plain entry point does not spawn threads, and can fail outright on a
+    // thread-constrained embedder. Sequential must mean sequential.
+    let per_order_groups: Vec<Result<Vec<Variant>, Error>> = if shards.len() <= 1 {
+        shards.into_iter().map(&build_shard).collect()
+    } else {
+        std::thread::scope(|scope| {
+            let handles: Vec<_> = shards
+                .into_iter()
+                .map(|range| scope.spawn(|| build_shard(range)))
+                .collect();
+            handles
+                .into_iter()
+                .map(|h| h.join().expect("v2 initial-variant worker thread panicked"))
+                .collect()
+        })
+    };
     let mut variants: Vec<Variant> = Vec::new();
     for group in per_order_groups {
         variants.extend(group?);
@@ -1848,30 +1853,33 @@ pub fn pack_indexed_png_with_parallelism(
         // shard_ranges clamps to 1..=len so a sequential Parallelism produces a
         // single shard that runs them inline.
         let shards = crate::parallel::shard_ranges(finalists.len(), parallelism.threads());
-        let optimized: Vec<Vec<u8>> = std::thread::scope(|scope| -> Result<Vec<Vec<u8>>, Error> {
-            let handles: Vec<_> = shards
-                .into_iter()
-                .map(|range| {
-                    let group: Vec<&Vec<u8>> = finalists[range]
-                        .iter()
-                        .map(|&i| &variants[i].data)
-                        .collect();
-                    let binary = &binary;
-                    let extra = &extra;
-                    scope.spawn(move || -> Result<Vec<Vec<u8>>, Error> {
-                        group
-                            .into_iter()
-                            .map(|data| run_zopflipng(data, binary, extra))
-                            .collect()
-                    })
-                })
-                .collect();
+        let run_shard = |range: std::ops::Range<usize>| -> Result<Vec<Vec<u8>>, Error> {
+            finalists[range]
+                .iter()
+                .map(|&i| run_zopflipng(&variants[i].data, &binary, &extra))
+                .collect()
+        };
+        // One shard runs on the caller's thread — see the note in
+        // `build_v2_variants`. Sequential must not create an OS thread.
+        let optimized: Vec<Vec<u8>> = if shards.len() <= 1 {
             let mut out: Vec<Vec<u8>> = Vec::with_capacity(finalists.len());
-            for handle in handles {
-                out.extend(handle.join().expect("zopflipng worker thread panicked")?);
+            for range in shards {
+                out.extend(run_shard(range)?);
             }
-            Ok(out)
-        })?;
+            out
+        } else {
+            std::thread::scope(|scope| -> Result<Vec<Vec<u8>>, Error> {
+                let handles: Vec<_> = shards
+                    .into_iter()
+                    .map(|range| scope.spawn(|| run_shard(range)))
+                    .collect();
+                let mut out: Vec<Vec<u8>> = Vec::with_capacity(finalists.len());
+                for handle in handles {
+                    out.extend(handle.join().expect("zopflipng worker thread panicked")?);
+                }
+                Ok(out)
+            })?
+        };
         // min by (optimized len, finalist index)
         let mut best = 0usize;
         for i in 1..optimized.len() {
