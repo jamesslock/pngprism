@@ -38,6 +38,11 @@ exclude = [
     "DESIGN-DIRECTIONS.md",
     "LICENSE-RECOMMENDATION.md",
     "PORT-PLAN.md",
+    # The README's comparison grid. ~1.6 MB of PNGs against a 647 KiB package:
+    # it is read on GitHub and crates.io, where the README references it by
+    # absolute URL pinned to the release tag, so shipping it in the tarball
+    # would triple every `cargo add` download for images nobody opens locally.
+    "docs/gallery/",
 ]
 
 [features]

@@ -195,6 +195,119 @@ session says otherwise.
 were taken against older default surfaces, and promoting a stale number to a
 current one is the kind of thing this README exists not to do.
 
+<!-- BEGIN GENERATED: comparison-grid -->
+<!-- generated-for-version: 0.5.0 -->
+
+### Four images, measured
+
+Each image run through both engines at their default settings and at maximum effort. Every number below is measured; the run that produced them is recorded in `docs/gallery/grid-record.json`.
+
+**Expect near-parity at maximum effort.** pngquant's best-effort arm here is `--speed 1` plus a lossless `zopflipng` post-pass, the same configuration the corpus figures above use. Against it, gains are small and some cells tie outright — that is the honest shape of this comparison, and it is why the wider corpus result is reported as wins *and* ties rather than as a headline ratio.
+
+**Output size is a claim**: the same input, flags and build produce the same bytes, and every cell here was verified by a twin run in the same session. **Time is not a claim** — the figures are observations from one machine (Darwin arm64), sequential, median of 5. They are not a benchmark, and no throughput comparison is made from them. **Visual quality is not claimed at all**; these are byte sizes beside the images that produced them.
+
+Measured with pngprism 0.5.0 against `pngquant 4.0.0` (baseline revision 2).
+
+### synthetic-hue-ramp
+
+*radial hue ramp over an alpha ramp — banding and dither*
+
+| original | pngquant<br>default | pngprism<br>default | pngquant<br>max effort | pngprism<br>max effort |
+|---|---|---|---|---|
+| <img src="https://raw.githubusercontent.com/jamesslock/pngprism/81611c6eda02a8c2b1d9aee5746e8ce84498954e/docs/gallery/img/synthetic-hue-ramp-original.png" alt="synthetic-hue-ramp original" width="150"> | <img src="https://raw.githubusercontent.com/jamesslock/pngprism/81611c6eda02a8c2b1d9aee5746e8ce84498954e/docs/gallery/img/synthetic-hue-ramp-pngquant-default.png" alt="synthetic-hue-ramp pngquant-default" width="150"> | <img src="https://raw.githubusercontent.com/jamesslock/pngprism/81611c6eda02a8c2b1d9aee5746e8ce84498954e/docs/gallery/img/synthetic-hue-ramp-pngprism-default.png" alt="synthetic-hue-ramp pngprism-default" width="150"> | <img src="https://raw.githubusercontent.com/jamesslock/pngprism/81611c6eda02a8c2b1d9aee5746e8ce84498954e/docs/gallery/img/synthetic-hue-ramp-pngquant-max.png" alt="synthetic-hue-ramp pngquant-max" width="150"> | <img src="https://raw.githubusercontent.com/jamesslock/pngprism/81611c6eda02a8c2b1d9aee5746e8ce84498954e/docs/gallery/img/synthetic-hue-ramp-pngprism-max.png" alt="synthetic-hue-ramp pngprism-max" width="150"> |
+| **16,545 B** | **924 B**<br>0.06x | **916 B**<br>0.06x | **638 B**<br>0.04x | **638 B**<br>0.04x |
+| — | 0.006s | 0.006s | 0.595s | 1.782s |
+
+<details><summary>SHA-256 and exact invocations</summary>
+
+| output | sha256 | command |
+|---|---|---|
+| original | `38dd79fbc9eb5b91abfa17a5d78eeaf02954fbfbe978ba4935c9bee024b99cfc` | — |
+| pngquant default | `693c46cff6272a3fe6e99930161112665b952c5d56d70dfcb72a11303217b7d0` | `pngquant --force --speed 3 --output OUT IN` |
+| pngprism default | `05b874e93907b53ddd273365d28885b1b178f6c1dd6614a924fed06a43fd8406` | `pngprism IN OUT --colors 256` |
+| pngquant max effort | `b806b9a97b8e1d9ebd7c768210e18f283b89257edc47ed99cc9803dbe7973a3b` | `pngquant --force --speed 1 --output OUT IN && zopflipng -m -y OUT OUT` |
+| pngprism max effort | `3c9b3cb57deee122b1415ad631cbe0cdb434543d252ddf23cfb27ecbb850efed` | `pngprism IN OUT --colors 256 --pack max --pack-search v2` |
+
+Source: Project Prism synthetic corpus (own work) — CC0-1.0
+</details>
+
+### lightmask-cone
+
+*smooth low-alpha falloff — shadow-tail behaviour*
+
+| original | pngquant<br>default | pngprism<br>default | pngquant<br>max effort | pngprism<br>max effort |
+|---|---|---|---|---|
+| <img src="https://raw.githubusercontent.com/jamesslock/pngprism/81611c6eda02a8c2b1d9aee5746e8ce84498954e/docs/gallery/img/lightmask-cone-original.png" alt="lightmask-cone original" width="150"> | <img src="https://raw.githubusercontent.com/jamesslock/pngprism/81611c6eda02a8c2b1d9aee5746e8ce84498954e/docs/gallery/img/lightmask-cone-pngquant-default.png" alt="lightmask-cone pngquant-default" width="150"> | <img src="https://raw.githubusercontent.com/jamesslock/pngprism/81611c6eda02a8c2b1d9aee5746e8ce84498954e/docs/gallery/img/lightmask-cone-pngprism-default.png" alt="lightmask-cone pngprism-default" width="150"> | <img src="https://raw.githubusercontent.com/jamesslock/pngprism/81611c6eda02a8c2b1d9aee5746e8ce84498954e/docs/gallery/img/lightmask-cone-pngquant-max.png" alt="lightmask-cone pngquant-max" width="150"> | <img src="https://raw.githubusercontent.com/jamesslock/pngprism/81611c6eda02a8c2b1d9aee5746e8ce84498954e/docs/gallery/img/lightmask-cone-pngprism-max.png" alt="lightmask-cone pngprism-max" width="150"> |
+| **2,964 B** | **3,040 B**<br>1.03x | **2,655 B**<br>0.90x | **2,039 B**<br>0.69x | **2,031 B**<br>0.69x |
+| — | 0.012s | 0.104s | 8.977s | 30.841s |
+
+<details><summary>SHA-256 and exact invocations</summary>
+
+| output | sha256 | command |
+|---|---|---|
+| original | `13b08da2ef43d966949d2d0a0ea74917f1dca89c0e9f6abbc1a522071f10bf8f` | — |
+| pngquant default | `69f0ce5e39d2e5bb5c87796429235241a4331c1313f14f283dac5c472ede7829` | `pngquant --force --speed 3 --output OUT IN` |
+| pngprism default | `84a305bbc0d674e6906213f20302a053ef701b958d73d209cdb159f9854d893f` | `pngprism IN OUT --colors 256` |
+| pngquant max effort | `9266c45735e6ada11f6b8473371017b5ead971578d1e9bc3d436a951c9188895` | `pngquant --force --speed 1 --output OUT IN && zopflipng -m -y OUT OUT` |
+| pngprism max effort | `3370125f43585ba7ea73f1933608d5299eef2d594b5a0c215f9e568f541be28b` | `pngprism IN OUT --colors 256 --pack max --pack-search v2` |
+
+Source: Kenney (kenney.nl), CC0 — CC0-1.0
+</details>
+
+### wrench-render
+
+*3D render with transparency — specular and gradient*
+
+| original | pngquant<br>default | pngprism<br>default | pngquant<br>max effort | pngprism<br>max effort |
+|---|---|---|---|---|
+| <img src="https://raw.githubusercontent.com/jamesslock/pngprism/81611c6eda02a8c2b1d9aee5746e8ce84498954e/docs/gallery/img/wrench-render-original.png" alt="wrench-render original" width="150"> | <img src="https://raw.githubusercontent.com/jamesslock/pngprism/81611c6eda02a8c2b1d9aee5746e8ce84498954e/docs/gallery/img/wrench-render-pngquant-default.png" alt="wrench-render pngquant-default" width="150"> | <img src="https://raw.githubusercontent.com/jamesslock/pngprism/81611c6eda02a8c2b1d9aee5746e8ce84498954e/docs/gallery/img/wrench-render-pngprism-default.png" alt="wrench-render pngprism-default" width="150"> | <img src="https://raw.githubusercontent.com/jamesslock/pngprism/81611c6eda02a8c2b1d9aee5746e8ce84498954e/docs/gallery/img/wrench-render-pngquant-max.png" alt="wrench-render pngquant-max" width="150"> | <img src="https://raw.githubusercontent.com/jamesslock/pngprism/81611c6eda02a8c2b1d9aee5746e8ce84498954e/docs/gallery/img/wrench-render-pngprism-max.png" alt="wrench-render pngprism-max" width="150"> |
+| **108,824 B** | **13,319 B**<br>0.12x | **10,138 B**<br>0.09x | **11,878 B**<br>0.11x | **9,219 B**<br>0.08x |
+| — | 0.017s | 0.073s | 1.281s | 7.722s |
+
+<details><summary>SHA-256 and exact invocations</summary>
+
+| output | sha256 | command |
+|---|---|---|
+| original | `c786eb4818762d27e61b1e4976bd13d8b06b466111c06a4157c365b8594d77cf` | — |
+| pngquant default | `518a0bc8973b62cc147ad3f15eb2cf9ec147c7ecc5a48b3763027de36dd7091e` | `pngquant --force --speed 3 --output OUT IN` |
+| pngprism default | `233fce4487523cd2ad05ab6bf08d2f77450166859f6d5ab7f39038a3bc91c6a4` | `pngprism IN OUT --colors 256` |
+| pngquant max effort | `9d0c042859095969a3b1b3f26b8e76bb0ae7971d9357d8f3dbb0b7c66b60c32d` | `pngquant --force --speed 1 --output OUT IN && zopflipng -m -y OUT OUT` |
+| pngprism max effort | `7ea1531a5de310d4f42629cfe961104db2755eaf88e84e2744814c1242df9abc` | `pngprism IN OUT --colors 256 --pack max --pack-search v2` |
+
+Source: Poly Haven, CC0 — CC0-1.0
+</details>
+
+### squirrel-cutout
+
+*photographic cutout — the hardest class*
+
+| original | pngquant<br>default | pngprism<br>default | pngquant<br>max effort | pngprism<br>max effort |
+|---|---|---|---|---|
+| <img src="https://raw.githubusercontent.com/jamesslock/pngprism/81611c6eda02a8c2b1d9aee5746e8ce84498954e/docs/gallery/img/squirrel-cutout-original.png" alt="squirrel-cutout original" width="150"> | <img src="https://raw.githubusercontent.com/jamesslock/pngprism/81611c6eda02a8c2b1d9aee5746e8ce84498954e/docs/gallery/img/squirrel-cutout-pngquant-default.png" alt="squirrel-cutout pngquant-default" width="150"> | <img src="https://raw.githubusercontent.com/jamesslock/pngprism/81611c6eda02a8c2b1d9aee5746e8ce84498954e/docs/gallery/img/squirrel-cutout-pngprism-default.png" alt="squirrel-cutout pngprism-default" width="150"> | <img src="https://raw.githubusercontent.com/jamesslock/pngprism/81611c6eda02a8c2b1d9aee5746e8ce84498954e/docs/gallery/img/squirrel-cutout-pngquant-max.png" alt="squirrel-cutout pngquant-max" width="150"> | <img src="https://raw.githubusercontent.com/jamesslock/pngprism/81611c6eda02a8c2b1d9aee5746e8ce84498954e/docs/gallery/img/squirrel-cutout-pngprism-max.png" alt="squirrel-cutout pngprism-max" width="150"> |
+| **189,155 B** | **66,660 B**<br>0.35x | **63,093 B**<br>0.33x | **60,454 B**<br>0.32x | **59,044 B**<br>0.31x |
+| — | 0.044s | 0.265s | 2.494s | 16.060s |
+
+<details><summary>SHA-256 and exact invocations</summary>
+
+| output | sha256 | command |
+|---|---|---|
+| original | `afea2b78d84ce9034498f21fb86b4f8ca1d547fb4212291282ab8aa5c1664172` | — |
+| pngquant default | `7949ab3b4bcff5cea7f001b365f4a10231d45d76c06918b13890eaa0b06f0051` | `pngquant --force --speed 3 --output OUT IN` |
+| pngprism default | `4f71aa80b9ae49dfe0f2e434491130fb65cdba61c5a8b2284661b578e790b5f1` | `pngprism IN OUT --colors 256` |
+| pngquant max effort | `ed1f2cf16c7d680e9d019fd1ec7ecc6b9293f4694086858e167035be09e1d200` | `pngquant --force --speed 1 --output OUT IN && zopflipng -m -y OUT OUT` |
+| pngprism max effort | `431f5568083ae46999a7b15a5cdf61bd5c40a591e6c94a009578234cda35276b` | `pngprism IN OUT --colors 256 --pack max --pack-search v2` |
+
+Source: Open Images — photograph CC BY 2.0, instance mask CC BY 4.0; the combined cutout is subject to both — CC-BY-2.0 AND CC-BY-4.0
+</details>
+
+#### Image credits
+
+- **synthetic-hue-ramp** — Project Prism synthetic corpus (own work) (CC0-1.0)
+- **lightmask-cone** — Kenney (kenney.nl), CC0 (CC0-1.0)
+- **wrench-render** — Poly Haven, CC0 (CC0-1.0)
+- **squirrel-cutout** — Open Images — photograph CC BY 2.0, instance mask CC BY 4.0; the combined cutout is subject to both (CC-BY-2.0 AND CC-BY-4.0)
+<!-- END GENERATED: comparison-grid -->
+
 ## Determinism
 
 The contract is: **same input bytes + same flags + same build → same output

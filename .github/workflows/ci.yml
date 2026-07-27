@@ -129,6 +129,28 @@ jobs:
           fi
           echo "surface matches: $(echo "$actual" | wc -l | tr -d ' ') declared entries"
 
+  grid-freshness:
+    name: comparison grid matches the version
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # The grid is generated in the private research lab, so CI cannot
+      # regenerate it or check the numbers. It CAN check that the block was
+      # produced for the version being shipped, which is the failure that
+      # actually happens: a release goes out and the README still shows the
+      # previous version's measurements.
+      - name: The generated grid must name the current version
+        shell: bash
+        run: |
+          declared="$(sed -n 's/^<!-- generated-for-version: \(.*\) -->$/\1/p' README.md)"
+          manifest="$(sed -n 's/^version = "\(.*\)"/\1/p' Cargo.toml | head -1)"
+          echo "grid: ${declared:-<none>} / Cargo.toml: $manifest"
+          [ -n "$declared" ] || { echo "::error::no generated-for-version marker in README.md"; exit 1; }
+          [ "$declared" = "$manifest" ] || {
+            echo "::error::README comparison grid was generated for $declared but this is $manifest."
+            echo "::error::Regenerate it in the lab (benchmarks/version-gallery) and re-export."
+            exit 1; }
+
   audit:
     name: cargo-deny (licenses, advisories, bans, sources)
     runs-on: ubuntu-latest

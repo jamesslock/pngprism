@@ -84,6 +84,23 @@ jobs:
         run: grep -q "^## ${{ steps.v.outputs.version }}" CHANGELOG.md || {
           echo "::error::no CHANGELOG.md section for ${{ steps.v.outputs.version }}"; exit 1; }
 
+      # Repeated here rather than relied upon from ci.yml, for the same reason
+      # the suite is: a tag can point at ANY commit, including one that never
+      # ran branch CI. Without this, a release could publish a crate whose
+      # README still shows the previous version's measurements — checked
+      # against the version being RELEASED, not against a branch.
+      - name: The comparison grid must have been generated for this version
+        shell: bash
+        run: |
+          declared="$(sed -n 's/^<!-- generated-for-version: \(.*\) -->$/\1/p' README.md)"
+          echo "grid: ${declared:-<none>} / releasing: ${{ steps.v.outputs.version }}"
+          [ -n "$declared" ] || {
+            echo "::error::no generated-for-version marker in README.md"; exit 1; }
+          [ "$declared" = "${{ steps.v.outputs.version }}" ] || {
+            echo "::error::grid was generated for $declared but releasing ${{ steps.v.outputs.version }}."
+            echo "::error::Regenerate it in the lab (benchmarks/version-gallery) and re-export."
+            exit 1; }
+
       - run: cargo test --locked --all-targets
       - run: cargo test --locked --release
       - run: cargo clippy --locked --all-targets -- -D warnings
