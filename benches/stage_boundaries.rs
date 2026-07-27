@@ -70,8 +70,30 @@ fn fixture_path() -> Option<(PathBuf, String)> {
         );
         return Some((path, label));
     }
-    let in_tree = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(
-        "../../datasets/collections/prism-benchmark-image/files/PNG_transparency_demonstration_1.png",
+    // The lab checkout, resolved the same way the test suites resolve it:
+    // PRISM_LAB_DIR if set, else the conventional sibling, confirmed by its
+    // .prism-root marker.
+    //
+    // This used to be `CARGO_MANIFEST_DIR/../../datasets/...`, correct while the
+    // crate sat at `research/project-prism/lib/prism-quant` inside the monorepo.
+    // After the split it resolves outside any checkout and can never exist, so
+    // `cargo bench` skipped every benchmark while still exiting zero — and these
+    // benchmarks exist specifically so optimization work can cite a stage-level
+    // delta. A performance harness that silently measures nothing is worse than
+    // none, because it looks like evidence.
+    let lab = std::env::var_os("PRISM_LAB_DIR").map_or_else(
+        || {
+            PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+                .parent()
+                .map(|p| p.join("pngprism-lab"))
+        },
+        |dir| Some(PathBuf::from(dir)),
+    )?;
+    if !lab.join(".prism-root").is_file() {
+        return None;
+    }
+    let in_tree = lab.join(
+        "datasets/collections/prism-benchmark-image/files/PNG_transparency_demonstration_1.png",
     );
     in_tree.is_file().then(|| (in_tree, "dice".to_string()))
 }
