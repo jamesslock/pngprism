@@ -103,6 +103,18 @@ fn fixture_path() -> Option<(PathBuf, String)> {
 fn load_fixture() -> Option<(DecodedImage, String)> {
     static EXPLAINED: std::sync::Once = std::sync::Once::new();
     let Some((path, label)) = fixture_path() else {
+        // Strict mode turns a skip into a failure, for automation that is
+        // SUPPOSED to have a fixture. This benchmark silently measured nothing
+        // from the repository split until 2026-07-27 while still exiting zero,
+        // which is the failure mode a performance harness can least afford: it
+        // looks like evidence. Same switch the test suites honour.
+        assert!(
+            std::env::var_os("PRISM_REQUIRE_LAB").is_none(),
+            "PRISM_REQUIRE_LAB is set but no bench fixture was found — set \
+             PNGPRISM_BENCH_IMAGE or PRISM_LAB_DIR, or clone pngprism-lab \
+             beside this crate. Refusing to report a benchmark that measured \
+             nothing."
+        );
         EXPLAINED.call_once(|| {
             eprintln!(
                 "stage_boundaries: SKIPPED — no bench image. Set PNGPRISM_BENCH_IMAGE \
