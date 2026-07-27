@@ -30,6 +30,11 @@ than its author.
 - `SECURITY.md` — how to report a vulnerability privately, what is in scope,
   and which versions are supported. It ships in the crate tarball, so it
   reaches crates.io with this release rather than only being visible on GitHub.
+- A measured comparison grid in `README.md` — four images through pngprism and
+  pngquant at both default and maximum effort, with output sizes, digests and
+  observed times. The images live in `docs/gallery/` and are excluded from the
+  crate tarball; the README references them by URL. Generated in the research
+  lab per release, not hand-written.
 
 ## 0.5.0 — first public release
 
