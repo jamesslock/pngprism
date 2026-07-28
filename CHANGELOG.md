@@ -25,6 +25,14 @@ than its author.
 
 ## Unreleased
 
+Nothing yet.
+
+## 0.6.0 — 2026-07-28
+
+A minor bump although **no output bytes change**, because the library API gained
+a function and the CLI's `--threads` default moved. Both are listed below. Every
+digest in the comparison grid is identical to 0.5.0's.
+
 ### Changed
 
 - **The CLI now defaults `--threads` to the machine's available cores**, where it

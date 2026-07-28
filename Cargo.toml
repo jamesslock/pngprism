@@ -1,6 +1,6 @@
 [package]
 name = "pngprism"
-version = "0.5.0"
+version = "0.6.0"
 edition = "2024"
 # Edition 2024 requires >= 1.85; pinned higher at 1.87 (clippy's
 # `incompatible_msrv` caught `u32::is_multiple_of` / `usize::is_multiple_of`
