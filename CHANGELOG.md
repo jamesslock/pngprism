@@ -36,6 +36,15 @@ than its author.
   (`Parallelism::SEQUENTIAL`). A command-line tool is expected to use the machine
   it was run on; a library must not spawn threads behind its caller's back.
 
+### Changed
+
+- `README.md` no longer says "no current speed claim is published" while
+  publishing per-cell timings a few paragraphs below. It now states the
+  measured disadvantage plainly — 3-6x pngquant at maximum effort, 4-9x at
+  default — and what buys it. The distinction the old line was reaching for is
+  kept: observed figures are published, a throughput *claim* is not, because
+  there is still no preregistered benchmark.
+
 ### Performance
 
 No output bytes change — stated first, because on this crate that is the

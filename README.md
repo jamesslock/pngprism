@@ -191,9 +191,27 @@ production-quality, and the single positive result is too small to lean on.
 Treat metric wins here with particular suspicion until a properly powered
 session says otherwise.
 
-**Speed.** No current speed claim is published. Earlier measurements exist but
-were taken against older default surfaces, and promoting a stale number to a
-current one is the kind of thing this README exists not to do.
+**Speed. pngprism is slower than pngquant, and by a wide margin.** In the grid
+below — this version, one machine — it takes roughly **3-6x** pngquant's time at
+maximum effort across all four images, and **4-9x** at default settings on three
+of them. The fourth is small enough that both finish in about 6ms, where the
+difference is not measurable. Every cell carries its own observed time, so the
+figures are there to check rather than summarised away.
+
+That is a deliberate trade, not an accident: the packing search evaluates many
+candidate encodings and verifies each one decodes back to the same pixels, and
+`--pack max` runs the external optimiser over several finalists rather than one.
+Buying smaller output and a verified-lossless guarantee with CPU time is the
+design, and it is the wrong trade for anyone converting at volume against a
+latency budget.
+
+**No throughput claim is made from those figures.** They are observations from a
+single machine, sequential, median of five — not a benchmark. There is still no
+preregistered performance measurement with warmup policy, variance and hardware
+pinned, so nothing here should be quoted as a speed ratio for your hardware.
+Earlier internal measurements exist but were taken against older default
+surfaces, and promoting a stale number to a current one is the kind of thing
+this README exists not to do.
 
 <!-- BEGIN GENERATED: comparison-grid -->
 <!-- generated-for-version: 0.5.0 -->
