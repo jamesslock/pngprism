@@ -191,12 +191,15 @@ production-quality, and the single positive result is too small to lean on.
 Treat metric wins here with particular suspicion until a properly powered
 session says otherwise.
 
-**Speed. pngprism is slower than pngquant, and by a wide margin.** In the grid
-below — this version, one machine — it takes roughly **3-6x** pngquant's time at
-maximum effort across all four images, and **4-9x** at default settings on three
-of them. The fourth is small enough that both finish in about 6ms, where the
-difference is not measurable. Every cell carries its own observed time, so the
-figures are there to check rather than summarised away.
+**Speed. pngprism is slower than pngquant.** In the grid below — this version,
+one machine — it takes roughly **1.1-2.5x** pngquant's time at maximum effort and
+**1.3-5.3x** at default settings. Every cell carries its own observed time, so
+the figures are there to check rather than summarised away.
+
+That gap narrowed substantially in 0.6.0, from 3-6x and 4-9x respectively, by
+scheduling independent work across cores rather than by changing what the
+program computes: output bytes are identical to 0.5.0 for every flag
+combination.
 
 That is a deliberate trade, not an accident: the packing search evaluates many
 candidate encodings and verifies each one decodes back to the same pixels, and
@@ -214,7 +217,7 @@ surfaces, and promoting a stale number to a current one is the kind of thing
 this README exists not to do.
 
 <!-- BEGIN GENERATED: comparison-grid -->
-<!-- generated-for-version: 0.5.0 -->
+<!-- generated-for-version: 0.6.0 -->
 
 ### Four images, measured
 
@@ -224,7 +227,7 @@ Each image run through both engines at their default settings and at maximum eff
 
 **Output size is a claim**: the same input, flags and build produce the same bytes, and every cell here was verified by a twin run in the same session. **Time is not a claim** — the figures are observations from one machine (Darwin arm64), sequential, median of 5. They are not a benchmark, and no throughput comparison is made from them. **Visual quality is not claimed at all**; these are byte sizes beside the images that produced them.
 
-Measured with pngprism 0.5.0 against `pngquant 4.0.0` (baseline revision 2).
+Measured with pngprism 0.6.0 against `pngquant 4.0.0` (baseline revision 2).
 
 ### synthetic-hue-ramp
 
@@ -232,9 +235,9 @@ Measured with pngprism 0.5.0 against `pngquant 4.0.0` (baseline revision 2).
 
 | original | pngquant<br>default | pngprism<br>default | pngquant<br>max effort | pngprism<br>max effort |
 |---|---|---|---|---|
-| <img src="https://raw.githubusercontent.com/jamesslock/pngprism/81611c6eda02a8c2b1d9aee5746e8ce84498954e/docs/gallery/img/synthetic-hue-ramp-original.png" alt="synthetic-hue-ramp original" width="150"> | <img src="https://raw.githubusercontent.com/jamesslock/pngprism/81611c6eda02a8c2b1d9aee5746e8ce84498954e/docs/gallery/img/synthetic-hue-ramp-pngquant-default.png" alt="synthetic-hue-ramp pngquant-default" width="150"> | <img src="https://raw.githubusercontent.com/jamesslock/pngprism/81611c6eda02a8c2b1d9aee5746e8ce84498954e/docs/gallery/img/synthetic-hue-ramp-pngprism-default.png" alt="synthetic-hue-ramp pngprism-default" width="150"> | <img src="https://raw.githubusercontent.com/jamesslock/pngprism/81611c6eda02a8c2b1d9aee5746e8ce84498954e/docs/gallery/img/synthetic-hue-ramp-pngquant-max.png" alt="synthetic-hue-ramp pngquant-max" width="150"> | <img src="https://raw.githubusercontent.com/jamesslock/pngprism/81611c6eda02a8c2b1d9aee5746e8ce84498954e/docs/gallery/img/synthetic-hue-ramp-pngprism-max.png" alt="synthetic-hue-ramp pngprism-max" width="150"> |
+| <img src="https://raw.githubusercontent.com/jamesslock/pngprism/v0.6.0/docs/gallery/img/synthetic-hue-ramp-original.png" alt="synthetic-hue-ramp original" width="150"> | <img src="https://raw.githubusercontent.com/jamesslock/pngprism/v0.6.0/docs/gallery/img/synthetic-hue-ramp-pngquant-default.png" alt="synthetic-hue-ramp pngquant-default" width="150"> | <img src="https://raw.githubusercontent.com/jamesslock/pngprism/v0.6.0/docs/gallery/img/synthetic-hue-ramp-pngprism-default.png" alt="synthetic-hue-ramp pngprism-default" width="150"> | <img src="https://raw.githubusercontent.com/jamesslock/pngprism/v0.6.0/docs/gallery/img/synthetic-hue-ramp-pngquant-max.png" alt="synthetic-hue-ramp pngquant-max" width="150"> | <img src="https://raw.githubusercontent.com/jamesslock/pngprism/v0.6.0/docs/gallery/img/synthetic-hue-ramp-pngprism-max.png" alt="synthetic-hue-ramp pngprism-max" width="150"> |
 | **16,545 B** | **924 B**<br>0.06x | **916 B**<br>0.06x | **638 B**<br>0.04x | **638 B**<br>0.04x |
-| — | 0.006s | 0.006s | 0.595s | 1.782s |
+| — | 0.005s | 0.007s | 0.621s | 0.674s |
 
 <details><summary>SHA-256 and exact invocations</summary>
 
@@ -255,9 +258,9 @@ Source: Project Prism synthetic corpus (own work) — CC0-1.0
 
 | original | pngquant<br>default | pngprism<br>default | pngquant<br>max effort | pngprism<br>max effort |
 |---|---|---|---|---|
-| <img src="https://raw.githubusercontent.com/jamesslock/pngprism/81611c6eda02a8c2b1d9aee5746e8ce84498954e/docs/gallery/img/lightmask-cone-original.png" alt="lightmask-cone original" width="150"> | <img src="https://raw.githubusercontent.com/jamesslock/pngprism/81611c6eda02a8c2b1d9aee5746e8ce84498954e/docs/gallery/img/lightmask-cone-pngquant-default.png" alt="lightmask-cone pngquant-default" width="150"> | <img src="https://raw.githubusercontent.com/jamesslock/pngprism/81611c6eda02a8c2b1d9aee5746e8ce84498954e/docs/gallery/img/lightmask-cone-pngprism-default.png" alt="lightmask-cone pngprism-default" width="150"> | <img src="https://raw.githubusercontent.com/jamesslock/pngprism/81611c6eda02a8c2b1d9aee5746e8ce84498954e/docs/gallery/img/lightmask-cone-pngquant-max.png" alt="lightmask-cone pngquant-max" width="150"> | <img src="https://raw.githubusercontent.com/jamesslock/pngprism/81611c6eda02a8c2b1d9aee5746e8ce84498954e/docs/gallery/img/lightmask-cone-pngprism-max.png" alt="lightmask-cone pngprism-max" width="150"> |
+| <img src="https://raw.githubusercontent.com/jamesslock/pngprism/v0.6.0/docs/gallery/img/lightmask-cone-original.png" alt="lightmask-cone original" width="150"> | <img src="https://raw.githubusercontent.com/jamesslock/pngprism/v0.6.0/docs/gallery/img/lightmask-cone-pngquant-default.png" alt="lightmask-cone pngquant-default" width="150"> | <img src="https://raw.githubusercontent.com/jamesslock/pngprism/v0.6.0/docs/gallery/img/lightmask-cone-pngprism-default.png" alt="lightmask-cone pngprism-default" width="150"> | <img src="https://raw.githubusercontent.com/jamesslock/pngprism/v0.6.0/docs/gallery/img/lightmask-cone-pngquant-max.png" alt="lightmask-cone pngquant-max" width="150"> | <img src="https://raw.githubusercontent.com/jamesslock/pngprism/v0.6.0/docs/gallery/img/lightmask-cone-pngprism-max.png" alt="lightmask-cone pngprism-max" width="150"> |
 | **2,964 B** | **3,040 B**<br>1.03x | **2,655 B**<br>0.90x | **2,039 B**<br>0.69x | **2,031 B**<br>0.69x |
-| — | 0.012s | 0.104s | 8.977s | 30.841s |
+| — | 0.013s | 0.071s | 7.510s | 10.474s |
 
 <details><summary>SHA-256 and exact invocations</summary>
 
@@ -278,9 +281,9 @@ Source: Kenney (kenney.nl), CC0 — CC0-1.0
 
 | original | pngquant<br>default | pngprism<br>default | pngquant<br>max effort | pngprism<br>max effort |
 |---|---|---|---|---|
-| <img src="https://raw.githubusercontent.com/jamesslock/pngprism/81611c6eda02a8c2b1d9aee5746e8ce84498954e/docs/gallery/img/wrench-render-original.png" alt="wrench-render original" width="150"> | <img src="https://raw.githubusercontent.com/jamesslock/pngprism/81611c6eda02a8c2b1d9aee5746e8ce84498954e/docs/gallery/img/wrench-render-pngquant-default.png" alt="wrench-render pngquant-default" width="150"> | <img src="https://raw.githubusercontent.com/jamesslock/pngprism/81611c6eda02a8c2b1d9aee5746e8ce84498954e/docs/gallery/img/wrench-render-pngprism-default.png" alt="wrench-render pngprism-default" width="150"> | <img src="https://raw.githubusercontent.com/jamesslock/pngprism/81611c6eda02a8c2b1d9aee5746e8ce84498954e/docs/gallery/img/wrench-render-pngquant-max.png" alt="wrench-render pngquant-max" width="150"> | <img src="https://raw.githubusercontent.com/jamesslock/pngprism/81611c6eda02a8c2b1d9aee5746e8ce84498954e/docs/gallery/img/wrench-render-pngprism-max.png" alt="wrench-render pngprism-max" width="150"> |
+| <img src="https://raw.githubusercontent.com/jamesslock/pngprism/v0.6.0/docs/gallery/img/wrench-render-original.png" alt="wrench-render original" width="150"> | <img src="https://raw.githubusercontent.com/jamesslock/pngprism/v0.6.0/docs/gallery/img/wrench-render-pngquant-default.png" alt="wrench-render pngquant-default" width="150"> | <img src="https://raw.githubusercontent.com/jamesslock/pngprism/v0.6.0/docs/gallery/img/wrench-render-pngprism-default.png" alt="wrench-render pngprism-default" width="150"> | <img src="https://raw.githubusercontent.com/jamesslock/pngprism/v0.6.0/docs/gallery/img/wrench-render-pngquant-max.png" alt="wrench-render pngquant-max" width="150"> | <img src="https://raw.githubusercontent.com/jamesslock/pngprism/v0.6.0/docs/gallery/img/wrench-render-pngprism-max.png" alt="wrench-render pngprism-max" width="150"> |
 | **108,824 B** | **13,319 B**<br>0.12x | **10,138 B**<br>0.09x | **11,878 B**<br>0.11x | **9,219 B**<br>0.08x |
-| — | 0.017s | 0.073s | 1.281s | 7.722s |
+| — | 0.019s | 0.060s | 1.297s | 2.714s |
 
 <details><summary>SHA-256 and exact invocations</summary>
 
@@ -301,9 +304,9 @@ Source: Poly Haven, CC0 — CC0-1.0
 
 | original | pngquant<br>default | pngprism<br>default | pngquant<br>max effort | pngprism<br>max effort |
 |---|---|---|---|---|
-| <img src="https://raw.githubusercontent.com/jamesslock/pngprism/81611c6eda02a8c2b1d9aee5746e8ce84498954e/docs/gallery/img/squirrel-cutout-original.png" alt="squirrel-cutout original" width="150"> | <img src="https://raw.githubusercontent.com/jamesslock/pngprism/81611c6eda02a8c2b1d9aee5746e8ce84498954e/docs/gallery/img/squirrel-cutout-pngquant-default.png" alt="squirrel-cutout pngquant-default" width="150"> | <img src="https://raw.githubusercontent.com/jamesslock/pngprism/81611c6eda02a8c2b1d9aee5746e8ce84498954e/docs/gallery/img/squirrel-cutout-pngprism-default.png" alt="squirrel-cutout pngprism-default" width="150"> | <img src="https://raw.githubusercontent.com/jamesslock/pngprism/81611c6eda02a8c2b1d9aee5746e8ce84498954e/docs/gallery/img/squirrel-cutout-pngquant-max.png" alt="squirrel-cutout pngquant-max" width="150"> | <img src="https://raw.githubusercontent.com/jamesslock/pngprism/81611c6eda02a8c2b1d9aee5746e8ce84498954e/docs/gallery/img/squirrel-cutout-pngprism-max.png" alt="squirrel-cutout pngprism-max" width="150"> |
+| <img src="https://raw.githubusercontent.com/jamesslock/pngprism/v0.6.0/docs/gallery/img/squirrel-cutout-original.png" alt="squirrel-cutout original" width="150"> | <img src="https://raw.githubusercontent.com/jamesslock/pngprism/v0.6.0/docs/gallery/img/squirrel-cutout-pngquant-default.png" alt="squirrel-cutout pngquant-default" width="150"> | <img src="https://raw.githubusercontent.com/jamesslock/pngprism/v0.6.0/docs/gallery/img/squirrel-cutout-pngprism-default.png" alt="squirrel-cutout pngprism-default" width="150"> | <img src="https://raw.githubusercontent.com/jamesslock/pngprism/v0.6.0/docs/gallery/img/squirrel-cutout-pngquant-max.png" alt="squirrel-cutout pngquant-max" width="150"> | <img src="https://raw.githubusercontent.com/jamesslock/pngprism/v0.6.0/docs/gallery/img/squirrel-cutout-pngprism-max.png" alt="squirrel-cutout pngprism-max" width="150"> |
 | **189,155 B** | **66,660 B**<br>0.35x | **63,093 B**<br>0.33x | **60,454 B**<br>0.32x | **59,044 B**<br>0.31x |
-| — | 0.044s | 0.265s | 2.494s | 16.060s |
+| — | 0.047s | 0.209s | 2.500s | 6.162s |
 
 <details><summary>SHA-256 and exact invocations</summary>
 
