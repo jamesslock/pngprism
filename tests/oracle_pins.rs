@@ -27,7 +27,7 @@ mod smoke;
 const ORACLE_PINS: [(&str, &str); 4] = [
     (
         "prism_quant.py",
-        "5525f72702f31054c0343562b3c40c415ff13097d21b08ebe83acdaa2fdcb5af",
+        "e4d57fd956b3cf37e61af9d887a96dff5259a9f7606b66bcd1f1160d4797c379",
     ),
     (
         "prism_dither.py",

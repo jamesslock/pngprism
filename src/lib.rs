@@ -1,10 +1,10 @@
-//! pngprism 0.5.0 (crate renamed from `prism-quant`, T-0213) — Rust port of
+//! pngprism (crate renamed from `prism-quant`, T-0213) — Rust port of
 //! the reviewed Python reference quantizer (`lab/reference/prism_quant.py`
 //! integrated CLI, ported from the v0.2.0-alpha pipeline pin,
 //! T-0067/T-0068 phase 1 + T-0094/T-0095 phase 2, review-passed) and its
 //! PNG substrate (`lab/reference/m1_png.py`).
 //!
-//! `quant::LABEL` retains the literal quality disclaimer "0.5.0, unproven,
+//! `quant::LABEL` retains the quality disclaimer "unproven,
 //! metric-validated only". That label denies an unearned human-acceptability
 //! claim; it does not mean the Rust port is still awaiting its historical
 //! T-0193 parity work. This crate was developed as a seam-by-seam translation

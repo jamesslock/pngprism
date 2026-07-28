@@ -133,8 +133,8 @@ from typing import Any, Sequence
 
 import m1_png
 
-VERSION = "0.5.0"
-LABEL = "0.5.0, unproven, metric-validated only"
+VERSION = "0.6.0"
+LABEL = "0.6.0, unproven, metric-validated only"
 # The ONE version source for the ``--version`` CLI flag (T-0210). Aliases
 # VERSION so the pipeline identity and the flag never drift apart. The Rust
 # port sources its own ``--version`` from CARGO_PKG_VERSION; as of the pngprism

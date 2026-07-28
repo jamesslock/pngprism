@@ -100,7 +100,12 @@ fn cli_success_and_labels() {
         String::from_utf8_lossy(&completed.stderr)
     );
     let stdout = String::from_utf8_lossy(&completed.stdout);
-    assert!(stdout.contains("0.5.0"), "stdout: {stdout}");
+    // Derived, not a literal: a hardcoded version here silently pinned the
+    // stale pipeline identity through the 0.6.0 bump.
+    assert!(
+        stdout.contains(env!("CARGO_PKG_VERSION")),
+        "stdout: {stdout}"
+    );
     assert!(completed.stderr.is_empty());
     let check = png::decode_png(&std::fs::read(&out).expect("read output")).expect("decode output");
     assert_eq!(check.properties.color_type, 3);

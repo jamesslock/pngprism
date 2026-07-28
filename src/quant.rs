@@ -19,7 +19,7 @@
 //! the oracle's ledger rows (`lab/reference/REFERENCES.md`); no new
 //! methods, no external sources.
 //!
-//! **Label: 0.5.0, unproven, metric-validated only.**
+//! **Label: see [`LABEL`] — unproven, metric-validated only.**
 
 use crate::parallel::{MergeOrder, Parallelism, map_ranges};
 use crate::png::{self, DecodedImage};
@@ -28,10 +28,20 @@ use std::collections::{BTreeMap, HashMap, HashSet};
 use std::path::Path;
 
 /// Pipeline identity strings (`pngprism.VERSION` / `LABEL`). Unified to the
-/// `pngprism 0.5.0` release identity (T-0213); the LABEL keeps its honest
-/// "unproven, metric-validated only" status (no human-acceptability gate).
-pub const VERSION: &str = "0.5.0";
-pub const LABEL: &str = "0.5.0, unproven, metric-validated only";
+/// crate's release identity (T-0213); the LABEL keeps its honest "unproven,
+/// metric-validated only" status (no human-acceptability gate).
+///
+/// Derived from `CARGO_PKG_VERSION` rather than written out, so a package bump
+/// cannot leave the pipeline identity behind. Before 0.6.0 these were literals,
+/// and bumping `Cargo.toml` produced a binary that answered `--version` with
+/// the new version while every ordinary conversion still printed the old one.
+/// The Python reference carries the same value and is checked against this by
+/// the parity suite.
+pub const VERSION: &str = env!("CARGO_PKG_VERSION");
+pub const LABEL: &str = concat!(
+    env!("CARGO_PKG_VERSION"),
+    ", unproven, metric-validated only"
+);
 
 pub const DEFAULT_COLORS: i64 = 256;
 pub const MAX_COLORS: i64 = 256;
