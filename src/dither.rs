@@ -20,7 +20,7 @@
 //! The source pin above records the port's historical origin; this module is
 //! part of the current pngprism surface.
 //!
-//! **Label: 0.5.0, unproven, metric-validated only.**
+//! **Label: see [`crate::quant::LABEL`] — unproven, metric-validated only.**
 
 use std::collections::HashSet;
 use std::sync::OnceLock;

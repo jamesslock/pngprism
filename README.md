@@ -17,7 +17,7 @@ pngprism input.png output.png --colors 256
 
 ## Status
 
-**Version 0.5.0, pre-1.0.** Usable — the CLI is contract-tested and output is
+**Version 0.6.0, pre-1.0.** Usable — the CLI is contract-tested and output is
 verified lossless — but the API is not stable yet, and 0.1–0.4 were internal to
 the research program this came out of.
 
